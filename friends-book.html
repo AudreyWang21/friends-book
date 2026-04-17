@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>朋友之书</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Serif+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #14100c;
+  --ink: #f0e6d2;
+  --ink-soft: #c9b896;
+  --ink-faint: #7a6a52;
+  --gold: #c8a971;
+  --gold-glow: rgba(200, 169, 113, 0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Noto Serif SC", serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(200, 169, 113, 0.09) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 85%, rgba(154, 59, 42, 0.05) 0%, transparent 60%),
+    var(--bg);
+  position: relative;
+}
+
+/* 纸张颗粒 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  z-index: 1;
+}
+
+/* 四角晕影 */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.45) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.container {
+  position: relative;
+  z-index: 3;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem 5rem;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* 标题区 */
+.header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+  animation: fadeIn 1.2s ease-out;
+}
+
+.ornament {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  color: var(--gold);
+  font-size: 0.85rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  opacity: 0.85;
+}
+
+.title {
+  font-size: clamp(2rem, 5vw, 2.6rem);
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  color: var(--ink);
+  margin-bottom: 1rem;
+  padding-left: 0.3em; /* 视觉居中 letter-spacing 补偿 */
+}
+
+.rule {
+  width: 60px;
+  height: 1px;
+  background: var(--gold);
+  margin: 0 auto 1rem;
+  opacity: 0.6;
+}
+
+.subtitle {
+  color: var(--ink-faint);
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  font-weight: 300;
+}
+
+/* 输入区 */
+.question-area {
+  width: 100%;
+  animation: fadeIn 1.2s ease-out 0.3s backwards;
+}
+
+.input-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  margin-bottom: 1rem;
+  letter-spacing: 0.3em;
+  text-align: center;
+}
+
+#question {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(122, 106, 82, 0.5);
+  padding: 0.8rem 0.5rem;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.05rem;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.4s ease;
+  margin-bottom: 2rem;
+}
+
+#question:focus {
+  border-bottom-color: var(--gold);
+}
+
+#question::placeholder {
+  color: var(--ink-faint);
+  opacity: 0.5;
+}
+
+.ask-btn {
+  display: block;
+  margin: 0 auto;
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: "Noto Serif SC", serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.4em;
+  padding: 0.75rem 2.5rem 0.75rem 2.9rem;
+  cursor: pointer;
+  transition: all 0.45s ease;
+}
+
+.ask-btn:hover {
+  background: var(--gold-glow);
+  letter-spacing: 0.55em;
+  padding-left: 3.05rem;
+  padding-right: 2.65rem;
+}
+
+.ask-btn:active {
+  transform: scale(0.98);
+}
+
+/* 回答区 */
+.answer-area {
+  margin-top: 3.5rem;
+  min-height: 140px;
+  width: 100%;
+  text-align: center;
+}
+
+.answer {
+  opacity: 0;
+}
+
+.answer.show {
+  animation: revealAnswer 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.quote {
+  font-size: clamp(1.5rem, 3.6vw, 1.95rem);
+  line-height: 1.8;
+  color: var(--ink);
+  font-weight: 400;
+  margin-bottom: 1.4rem;
+  letter-spacing: 0.05em;
+}
+
+.attribution {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.08em;
+}
+
+.attribution .dash {
+  color: var(--gold);
+  margin-right: 0.2em;
+}
+
+.attribution .author {
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.again {
+  display: inline-block;
+  margin-top: 2.2rem;
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--ink-faint);
+  cursor: pointer;
+  letter-spacing: 0.15em;
+  transition: color 0.3s ease;
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+  opacity: 0;
+}
+
+.again.show {
+  opacity: 1;
+  animation: fadeIn 0.8s ease-out 0.7s backwards;
+}
+
+.again:hover {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+.thinking {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  color: var(--ink-faint);
+  letter-spacing: 0.2em;
+  font-size: 0.95rem;
+  animation: pulse 1.3s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes revealAnswer {
+  0%   { opacity: 0; transform: translateY(20px); filter: blur(8px); }
+  100% { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 0.85; }
+}
+
+/* 页脚印记 */
+.footer-mark {
+  position: fixed;
+  bottom: 1.3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Cormorant Garamond", serif;
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.4em;
+  opacity: 0.45;
+  z-index: 3;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .container { padding: 2rem 1.25rem 4.5rem; }
+  .header { margin-bottom: 2.5rem; }
+  .answer-area { margin-top: 2.5rem; }
+  .ask-btn { letter-spacing: 0.3em; padding: 0.75rem 2rem 0.75rem 2.3rem; }
+  .ask-btn:hover { letter-spacing: 0.4em; padding-left: 2.4rem; padding-right: 1.9rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="header">
+    <div class="ornament" id="ornament"></div>
+    <h1 class="title" id="title"></h1>
+    <div class="rule"></div>
+    <div class="subtitle" id="subtitle"></div>
+  </header>
+
+  <div class="question-area">
+    <input type="text" id="question" autocomplete="off">
+    <button class="ask-btn" id="askBtn"></button>
+  </div>
+
+  <div class="answer-area" id="answerArea"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//   ↓↓↓   要改的东西都在这里   ↓↓↓
+//   （CSS、动画、逻辑都不用动,只改下面这些文字就好）
+// ═══════════════════════════════════════════════════════════
+
+// ─── 页面上的文字 ───────────────────────────────────────────
+const TEXT = {
+  ornament:    "怀师，海狮，鱼师共著",   // 顶部金色小字
+  title:       "西音磕考队之书",          // 主标题
+  subtitle:    "道出心中所问，她们便会答你", // 副标题
+  placeholder: "在此写下你的问题……",      // 输入框提示
+  askButton:   "求 答",                    // 按钮文字
+  thinking:    "……正在翻阅……",          // 抽取时的等待字
+  again:       "再问一次"                  // 再抽一次的按钮
+};
+
+// ─── 聊天记录 ───────────────────────────────────────────────
+// 格式: { text: "说的话", author: "谁说的", date: "什么时候说的" }
+// 加几条删几条都行,多少都不会出问题
+const messages = [
+  { text: "鱼师你是不是把小红书下回来了", author: "怀师", date: "2026年4月1日" },
+  { text: "嬷一下", author: "怀师", date: "2026年4月1日" },
+  { text: "ao3分化了", author: "怀师", date: "2026年4月1日" },
+  { text: "ai时代最有价值的就是不可量化的东西", author: "怀师", date: "2026年4月1日" },
+  { text: "是的", author: "怀师", date: "2026年4月1日" },
+  { text: "好绝的评论", author: "怀师", date: "2026年4月1日" },
+  { text: "不要搞替身这种俗套的梗啊", author: "怀师", date: "2026年4月1日" },
+  { text: "好诡异", author: "怀师", date: "2026年4月1日" },
+  { text: "不如嫂子开门我是我哥", author: "怀师", date: "2026年4月1日" },
+  { text: "感觉怪怪的", author: "怀师", date: "2026年4月1日" },
+  { text: "这是什么自愿退出三角关系的剧情", author: "怀师", date: "2026年4月1日" },
+  { text: "我发现把脸挡上反耳会更好看", author: "怀师", date: "2026年4月2日" },
+  { text: "旧的不去新的不来", author: "怀师", date: "2026年4月2日" },
+  { text: "嘿嘿", author: "怀师", date: "2026年4月2日" },
+  { text: "我戴了海狮送的丝巾", author: "怀师", date: "2026年4月2日" },
+  { text: "火箭鱼老师", author: "怀师", date: "2026年4月2日" },
+  { text: "第一是特别丑，第二是特别丈育", author: "海狮", date: "2026年4月4日" },
+  { text: "对了昨天那个新卡元稹让我很崩溃", author: "海狮", date: "2026年4月4日" },
+  { text: "笑死怀师主页都这么多梦微之了", author: "海狮", date: "2026年4月4日" },
+  { text: "我感觉这个新卡长得好卡通（）", author: "海狮", date: "2026年4月4日" },
+  { text: "马啸搭新卡", author: "海狮", date: "2026年4月4日" },
+  { text: "哦这是一号晚上的", author: "海狮", date: "2026年4月4日" },
+  { text: "我开窗拍拍！", author: "海狮", date: "2026年4月4日" },
+  { text: "想君骑马好仪容", author: "海狮", date: "2026年4月4日" },
+  { text: "春草绿融云色白", author: "海狮", date: "2026年4月4日" },
+  { text: "等等等等我才意识到这个震撼美味是说巧克力的吗", author: "海狮", date: "2026年4月13日" },
+  { text: "刘禹锡还编过一本医书", author: "海狮", date: "2026年4月13日" },
+  { text: "哦对了柳州救三死方最后是刘禹锡编撰的哦（", author: "海狮", date: "2026年4月13日" },
+  { text: "看到的时候有一瞬间觉得恶心，后面只觉得好惨了", author: "海狮", date: "2026年4月13日" },
+  { text: "我之前看柳宗元的那个柳州救三死方，写了他在柳州三次大病以及是怎么被救回来的，三次里面两次都有童子尿，还有一次有蜣螂的什么什么东西", author: "海狮", date: "2026年4月13日" },
+  { text: "不知道真假，但是童子尿入药在古代并不稀奇（）", author: "海狮", date: "2026年4月13日" },
+  { text: "评论区还有一堆神人", author: "海狮", date: "2026年4月13日" },
+  { text: "这个帖子和评论区太好笑了", author: "海狮", date: "2026年4月13日" },
+  { text: "感觉海狮也可以打扮成这样诶", author: "怀师", date: "2026年4月2日" },
+  { text: "好文艺", author: "怀师", date: "2026年4月2日" },
+  { text: "那鱼师和他相处的怎么样", author: "怀师", date: "2026年4月2日" },
+  { text: "哦哈哈哈哈哈哈", author: "怀师", date: "2026年4月2日" },
+  { text: "反正全天下我实力得是最强的", author: "怀师", date: "2026年4月2日" },
+  { text: "而且我小时候的世界观里我不谈恋爱但一定得是王", author: "怀师", date: "2026年4月2日" },
+  { text: "诶可以分享一下", author: "怀师", date: "2026年4月2日" },
+  { text: "一般都别人都是有什么水系火系这种系的魔法 我全都要", author: "怀师", date: "2026年4月2日" },
+  { text: "我小时候主体性真的很强了 因为老把自己想成最强的", author: "怀师", date: "2026年4月2日" },
+  { text: "我喜欢那种魔法奇幻设定", author: "怀师", date: "2026年4月2日" },
+  { text: "诶我也是诶", author: "怀师", date: "2026年4月2日" },
+  { text: "我说那你真应该看看史同 反正我吃到的大部分最后都阴阳两隔了（）", author: "怀师", date: "2026年4月2日" },
+  { text: "诶我今天刷到一个帖子讨论这个", author: "怀师", date: "2026年4月2日" },
+  { text: "诶鱼师你磕的是这对吗", author: "怀师", date: "2026年4月2日" },
+  { text: "我刚要说这个", author: "怀师", date: "2026年4月2日" },
+  { text: "wow", author: "怀师", date: "2026年4月2日" },
+  { text: "磕一口文人", author: "怀师", date: "2026年4月2日" },
+  { text: "好浪漫", author: "怀师", date: "2026年4月2日" },
+  { text: "但这个故事怎么有点眼熟", author: "怀师", date: "2026年4月2日" },
+  { text: "哦— 看诗爱上好浪漫", author: "怀师", date: "2026年4月2日" },
+  { text: "感觉海狮会很适合", author: "怀师", date: "2026年4月2日" },
+  { text: "草", author: "怀师", date: "2026年4月2日" },
+  { text: "不过就我来说跟这种男生交朋友的意愿大于那些搞体育的", author: "怀师", date: "2026年4月2日" },
+  { text: "确实很nerdy哈哈哈哈", author: "怀师", date: "2026年4月2日" },
+  { text: "看哭了（不是", author: "怀师", date: "2026年4月2日" },
+  { text: "很诡异", author: "怀师", date: "2026年4月2日" },
+  { text: "好奇怪啊", author: "怀师", date: "2026年4月2日" },
+  { text: "我现生朋友怎么现在都叫我网名", author: "怀师", date: "2026年4月2日" },
+  { text: "卡瓦", author: "怀师", date: "2026年4月2日" },
+  { text: "赛博宠物聚会", author: "怀师", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈好有创意", author: "怀师", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈哈哈这", author: "怀师", date: "2026年4月2日" },
+  { text: "好岁月静好", author: "怀师", date: "2026年4月2日" },
+  { text: "好健康", author: "怀师", date: "2026年4月2日" },
+  { text: "说可以写后知后觉当时自己一见钟情了", author: "怀师", date: "2026年4月2日" },
+  { text: "我这个号有时候都不知道谁是谁了", author: "怀师", date: "2026年4月2日" },
+  { text: "不知道诶", author: "怀师", date: "2026年4月2日" },
+  { text: "而且我发现他们老登最爱莫名其妙的叫师兄师弟", author: "怀师", date: "2026年4月2日" },
+  { text: "他打滴滴跟司机聊爽了也加司机微信", author: "怀师", date: "2026年4月2日" },
+  { text: "大概是有各个阶段的同学同事客户朋友什么的", author: "怀师", date: "2026年4月2日" },
+  { text: "一万", author: "怀师", date: "2026年4月2日" },
+  { text: "与此同时我爸：我是个内向的人", author: "怀师", date: "2026年4月2日" },
+  { text: "因为他两个号的好友都上限了", author: "怀师", date: "2026年4月2日" },
+  { text: "他还有三个微信号", author: "怀师", date: "2026年4月2日" },
+  { text: "感觉", author: "怀师", date: "2026年4月2日" },
+  { text: "而且新出的设备也更伤眼睛", author: "怀师", date: "2026年4月2日" },
+  { text: "看上去贵贵的", author: "怀师", date: "2026年4月3日" },
+  { text: "好看", author: "怀师", date: "2026年4月3日" },
+  { text: "听日语歌勾起了我想打音游的欲望", author: "怀师", date: "2026年4月3日" },
+  { text: "不知道听什么音乐可以让我专心学习", author: "怀师", date: "2026年4月3日" },
+  { text: "好的火箭鱼", author: "怀师", date: "2026年4月3日" },
+  { text: "很可爱", author: "怀师", date: "2026年4月3日" },
+  { text: "可以aw听着像aw", author: "怀师", date: "2026年4月3日" },
+  { text: "芜湖", author: "怀师", date: "2026年4月3日" },
+  { text: "手机有自己的遗照", author: "怀师", date: "2026年4月3日" },
+  { text: "这是黑白吗", author: "怀师", date: "2026年4月3日" },
+  { text: "我给别人介绍我推：", author: "怀师", date: "2026年4月2日" },
+  { text: "笑死了", author: "怀师", date: "2026年4月2日" },
+  { text: "服装也很适配了", author: "怀师", date: "2026年4月3日" },
+  { text: "演的真好", author: "怀师", date: "2026年4月3日" },
+  { text: "感觉到海狮真的很感动了", author: "怀师", date: "2026年4月3日" },
+  { text: "有视频看吗", author: "怀师", date: "2026年4月3日" },
+  { text: "哦天呐", author: "怀师", date: "2026年4月3日" },
+  { text: "可能因为活得太短了吧（）", author: "怀师", date: "2026年4月3日" },
+  { text: "这看的很开了", author: "怀师", date: "2026年4月3日" },
+  { text: "他经历了什么感觉过的很辛苦", author: "怀师", date: "2026年4月3日" },
+  { text: "对哦其他人都过了几十年他才过了九年", author: "怀师", date: "2026年4月3日" },
+  { text: "是刀子", author: "怀师", date: "2026年4月3日" },
+  { text: "这个节省（？", author: "怀师", date: "2026年4月3日" },
+  { text: "哦不", author: "怀师", date: "2026年4月1日" },
+  { text: "好厉害", author: "怀师", date: "2026年4月1日" },
+  { text: "哈哈哈哈哈", author: "怀师", date: "2026年4月1日" },
+  { text: "我天哈哈哈哈哈", author: "怀师", date: "2026年4月1日" },
+  { text: "哈哈哈哈哈哈所有人抢着当剑", author: "怀师", date: "2026年4月1日" },
+  { text: "还是", author: "怀师", date: "2026年4月1日" },
+  { text: "今天海狮愚人节", author: "怀师", date: "2026年4月1日" },
+  { text: "三喜临门", author: "怀师", date: "2026年4月1日" },
+  { text: "下次见面这么拍", author: "怀师", date: "2026年4月1日" },
+  { text: "哈哈哈哈哈哈哈太好了", author: "怀师", date: "2026年4月1日" },
+  { text: "耶哈哈哈哈哈哈", author: "怀师", date: "2026年4月1日" },
+  { text: "对不起🙇希望没有影响到大家的心情", author: "怀师", date: "2026年4月2日" },
+  { text: "我也是看有个什么时代少年团的梦女搞的 把我创的印象深刻", author: "怀师", date: "2026年4月2日" },
+  { text: "就男的的那个", author: "怀师", date: "2026年4月2日" },
+  { text: "有点恶俗", author: "怀师", date: "2026年4月2日" },
+  { text: "uhm", author: "怀师", date: "2026年4月2日" },
+  { text: "呃", author: "怀师", date: "2026年4月2日" },
+  { text: "我想起来有人用音量键比喻那个", author: "怀师", date: "2026年4月2日" },
+  { text: "？", author: "怀师", date: "2026年4月2日" },
+  { text: "主包就这样学一会看一会英国留学vlog试图激励自己", author: "怀师", date: "2026年4月1日" },
+  { text: "大家一吐槽就金句频出啊", author: "怀师", date: "2026年4月1日" },
+  { text: "hhhhh", author: "怀师", date: "2026年4月1日" },
+  { text: "是啊", author: "怀师", date: "2026年4月1日" },
+  { text: "是的", author: "怀师", date: "2026年4月2日" },
+  { text: "鱼师这个可爱", author: "怀师", date: "2026年4月2日" },
+  { text: "有没有创到你们", author: "怀师", date: "2026年4月2日" },
+  { text: "搜到了", author: "怀师", date: "2026年4月2日" },
+  { text: "他爹的", author: "怀师", date: "2026年4月2日" },
+  { text: "还真", author: "怀师", date: "2026年4月2日" },
+  { text: "不一定能找到", author: "怀师", date: "2026年4月2日" },
+  { text: "我去搜搜", author: "怀师", date: "2026年4月2日" },
+  { text: "不懂就不懂吧stay innocent！", author: "怀师", date: "2026年4月2日" },
+  { text: "(顺势抱住", author: "怀师", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈海狮你真好", author: "怀师", date: "2026年4月2日" },
+  { text: "她说她喜欢磕那种一方死后另一方怀念的产品", author: "怀师", date: "2026年4月2日" },
+  { text: "水灵灵把自己写死了", author: "怀师", date: "2026年4月2日" },
+  { text: "我这位朋友的oc是19世纪革命家 最后被砍头了（）", author: "怀师", date: "2026年4月2日" },
+  { text: "确实", author: "怀师", date: "2026年4月2日" },
+  { text: "不过我朋友给我分享我觉得蛮有意思的", author: "怀师", date: "2026年4月2日" },
+  { text: "确实", author: "怀师", date: "2026年4月2日" },
+  { text: "说实话我好佩服搞oc的 所有的饭都是自己做的", author: "怀师", date: "2026年4月2日" },
+  { text: "然后我和这位朋友互相给对方安利自己的家产并且成功把对方带入坑", author: "怀师", date: "2026年4月2日" },
+  { text: "好可爱", author: "怀师", date: "2026年4月2日" },
+  { text: "aw", author: "怀师", date: "2026年4月2日" },
+  { text: "我以为她和她老公在搞窒息play 结果是真窒息了（）", author: "怀师", date: "2026年4月2日" },
+  { text: "话说今天我朋友给我看她画的oc画的是她oc的死状 我以为是黄图", author: "怀师", date: "2026年4月2日" },
+  { text: "看看照片", author: "怀师", date: "2026年4月8日" },
+  { text: "我也觉得", author: "怀师", date: "2026年4月8日" },
+  { text: "怎么说", author: "怀师", date: "2026年4月8日" },
+  { text: "小时候学的", author: "怀师", date: "2026年4月8日" },
+  { text: "你可知macau不是我真姓", author: "怀师", date: "2026年4月8日" },
+  { text: "我下午再找那个", author: "怀师", date: "2026年4月8日" },
+  { text: "好的！", author: "怀师", date: "2026年4月8日" },
+  { text: "我收", author: "怀师", date: "2026年4月8日" },
+  { text: "哇塞好多", author: "怀师", date: "2026年4月8日" },
+  { text: "哦不应该不行", author: "怀师", date: "2026年4月8日" },
+  { text: "可以先发来试试", author: "怀师", date: "2026年4月8日" },
+  { text: "因为我听情歌会演mv 听音乐剧想演剧 听rnb喜欢闭着眼睛晃荡 听古典想当智慧 听术曲想打音游 听kpop和phonk想跳舞", author: "怀师", date: "2026年4月8日" },
+  { text: "我之前在深圳过年的时候就有蚊子了", author: "怀师", date: "2026年4月4日" },
+  { text: "给自己熏香熏的是蚊香（）", author: "怀师", date: "2026年4月3日" },
+  { text: "我被蚊子折磨了两个晚上直接开始点蚊香", author: "怀师", date: "2026年4月3日" },
+  { text: "我就这样掰着手指头过日子", author: "怀师", date: "2026年4月3日" },
+  { text: "5月18号", author: "怀师", date: "2026年4月3日" },
+  { text: "等我考完试的吧", author: "怀师", date: "2026年4月3日" },
+  { text: "那很好了", author: "怀师", date: "2026年4月3日" },
+  { text: "主要是翻了翻自己的文档 感觉我的本就稀烂的写作水平还退步了", author: "怀师", date: "2026年4月3日" },
+  { text: "有点想复建写同人文了", author: "怀师", date: "2026年4月3日" },
+  { text: "看来演员有好好研究过", author: "怀师", date: "2026年4月3日" },
+  { text: "那真的很用心了", author: "怀师", date: "2026年4月3日" },
+  { text: "算了谁没点赛博案底呢", author: "怀师", date: "2026年4月4日" },
+  { text: "越想越气", author: "怀师", date: "2026年4月4日" },
+  { text: "是原价", author: "怀师", date: "2026年4月4日" },
+  { text: "草", author: "怀师", date: "2026年4月4日" },
+  { text: "甚至不是前排", author: "怀师", date: "2026年4月4日" },
+  { text: "等一下那我当年花1000看双琴算什么", author: "怀师", date: "2026年4月4日" },
+  { text: "太可怕了", author: "怀师", date: "2026年4月4日" },
+  { text: "x3啊", author: "怀师", date: "2026年4月4日" },
+  { text: "我去", author: "怀师", date: "2026年4月4日" },
+  { text: "如果是第一排感觉1200还好诶", author: "怀师", date: "2026年4月4日" },
+  { text: "原价多少啊", author: "怀师", date: "2026年4月4日" },
+  { text: "我在首页刷到了", author: "怀师", date: "2026年4月4日" },
+  { text: "在这种天气里人心情能好吗（）", author: "怀师", date: "2026年4月4日" },
+  { text: "就这样天天阴天又不下雨 又闷又热又湿", author: "怀师", date: "2026年4月4日" },
+  { text: "香港还没放晴", author: "怀师", date: "2026年4月4日" },
+  { text: "因为清明节复活节的都放假了", author: "怀师", date: "2026年4月4日" },
+  { text: "不过最近人可能会很多", author: "怀师", date: "2026年4月4日" },
+  { text: "好诶！", author: "怀师", date: "2026年4月4日" },
+  { text: "都没扫上", author: "怀师", date: "2026年4月4日" },
+  { text: "我连自家的", author: "怀师", date: "2026年4月4日" },
+  { text: "海狮有回家扫墓吗", author: "怀师", date: "2026年4月4日" },
+  { text: "我也想去", author: "怀师", date: "2026年4月4日" },
+  { text: "我不行了", author: "怀师", date: "2026年4月4日" },
+  { text: "怎么这么好笑", author: "怀师", date: "2026年4月4日" },
+  { text: "我不行了我第一次刷到这对的文", author: "怀师", date: "2026年4月4日" },
+  { text: "文盲也不要接这个戏啊（）", author: "怀师", date: "2026年4月4日" },
+  { text: "这太坏了", author: "怀师", date: "2026年4月4日" },
+  { text: "等一下有两个梦微之", author: "怀师", date: "2026年4月4日" },
+  { text: "我：", author: "怀师", date: "2026年4月4日" },
+  { text: "好春天哦", author: "怀师", date: "2026年4月4日" },
+  { text: "拍照来看看", author: "怀师", date: "2026年4月4日" },
+  { text: "清明时节雨纷纷", author: "怀师", date: "2026年4月4日" },
+  { text: "我去", author: "怀师", date: "2026年4月4日" },
+  { text: "哦对应该是的", author: "怀师", date: "2026年4月4日" },
+  { text: "好棒！", author: "怀师", date: "2026年4月4日" },
+  { text: "至今找不到claude的官网", author: "怀师", date: "2026年4月4日" },
+  { text: "我说我怎么没看到", author: "怀师", date: "2026年4月4日" },
+  { text: "还挺可爱", author: "怀师", date: "2026年4月4日" },
+  { text: "我确实第一次看温荆的文", author: "怀师", date: "2026年4月4日" },
+  { text: "我用的poe好像没有诶", author: "怀师", date: "2026年4月4日" },
+  { text: "这个写的是王安石司马光", author: "怀师", date: "2026年4月4日" },
+  { text: "什么我也去关", author: "怀师", date: "2026年4月4日" },
+  { text: "主要是生物", author: "怀师", date: "2026年4月4日" },
+  { text: "就考试的内容", author: "怀师", date: "2026年4月4日" },
+  { text: "只有上手了才知道任务有多艰巨", author: "怀师", date: "2026年4月4日" },
+  { text: "哎认真学了一周之后反而更绝望了", author: "怀师", date: "2026年4月4日" },
+  { text: "claude立大功", author: "怀师", date: "2026年4月4日" },
+  { text: "这么厉害", author: "怀师", date: "2026年4月4日" },
+  { text: "开心", author: "怀师", date: "2026年4月4日" },
+  { text: "原来是tag进错了找到了我前几天刷到但是忘bookmark的长篇了", author: "怀师", date: "2026年4月4日" },
+  { text: "也可能我没注意", author: "怀师", date: "2026年4月4日" },
+  { text: "那看来还是我看的少了（）", author: "怀师", date: "2026年4月4日" },
+  { text: "我一直看的是有&的tag怪不得饭少呢", author: "怀师", date: "2026年4月4日" },
+  { text: "第一次知道这个", author: "怀师", date: "2026年4月4日" },
+  { text: "这个系列我终于刷到史同了", author: "怀师", date: "2026年4月7日" },
+  { text: "哦哈哈哈哈哈", author: "怀师", date: "2026年4月7日" },
+  { text: "我还以为是白头发", author: "怀师", date: "2026年4月7日" },
+  { text: "哦是挑染啊", author: "怀师", date: "2026年4月7日" },
+  { text: "我爹学会了我的后置拍照方式", author: "怀师", date: "2026年4月7日" },
+  { text: "这个画风好看", author: "怀师", date: "2026年4月7日" },
+  { text: "哈哈哈哈哈好有创意", author: "怀师", date: "2026年4月7日" },
+  { text: "phonesex就这样夹在一堆专业用语里", author: "怀师", date: "2026年4月4日" },
+  { text: "距离我上次崩溃已经过去好久了 隐隐有预感最近会崩个大的", author: "怀师", date: "2026年4月4日" },
+  { text: "最近压力大 感觉我自己有点没安全感", author: "怀师", date: "2026年4月4日" },
+  { text: "感觉最近到处都有花看", author: "怀师", date: "2026年4月8日" },
+  { text: "唯有牡丹真国色", author: "怀师", date: "2026年4月8日" },
+  { text: "鱼师快抓紧出去玩哈哈哈哈！", author: "怀师", date: "2026年4月8日" },
+  { text: "哇好厉害", author: "怀师", date: "2026年4月8日" },
+  { text: "是的", author: "怀师", date: "2026年4月7日" },
+  { text: "虎躯一震", author: "怀师", date: "2026年4月7日" },
+  { text: "逛着ao3突然看到自己名字", author: "怀师", date: "2026年4月7日" },
+  { text: "我记得最开始是因为内娱赵丽颖和张凌赫的粉丝掐架", author: "怀师", date: "2026年4月7日" },
+  { text: "就是这个bgm配上一堆奖项成就什么的", author: "怀师", date: "2026年4月7日" },
+  { text: "就是叫当bro觉得自己影响力很大", author: "怀师", date: "2026年4月7日" },
+  { text: "我在草原眺望北京～", author: "怀师", date: "2026年4月8日" },
+  { text: "瓦蓝蓝的天上飞雄鹰～", author: "怀师", date: "2026年4月8日" },
+  { text: "我被首都眺望者洗脑了", author: "怀师", date: "2026年4月8日" },
+  { text: "最近在播浪姐", author: "怀师", date: "2026年4月8日" },
+  { text: "看虫子吗[Terror]", author: "怀师", date: "2026年4月8日" },
+  { text: "手搓的吗", author: "怀师", date: "2026年4月8日" },
+  { text: "好酷啊", author: "怀师", date: "2026年4月8日" },
+  { text: "咖位之争", author: "怀师", date: "2026年4月8日" },
+  { text: "笑死我了", author: "怀师", date: "2026年4月8日" },
+  { text: "还有每天95%的湿度", author: "怀师", date: "2026年4月8日" },
+  { text: "但是在香港能有雨", author: "怀师", date: "2026年4月8日" },
+  { text: "来吧来吧", author: "怀师", date: "2026年4月8日" },
+  { text: "我收", author: "怀师", date: "2026年4月8日" },
+  { text: "我好想看樱花啊", author: "怀师", date: "2026年4月8日" },
+  { text: "感觉到处都春暖花开的", author: "怀师", date: "2026年4月8日" },
+  { text: "挺好挺好", author: "怀师", date: "2026年4月8日" },
+  { text: "很有使命感哈哈哈哈", author: "怀师", date: "2026年4月8日" },
+  { text: "海狮这几天有出去玩吗", author: "怀师", date: "2026年4月8日" },
+  { text: "海狮！", author: "怀师", date: "2026年4月8日" },
+  { text: "听红歌", author: "怀师", date: "2026年4月8日" },
+  { text: "我发现听什么音乐能专心学了", author: "怀师", date: "2026年4月8日" },
+  { text: "应该是吧", author: "怀师", date: "2026年4月8日" },
+  { text: "听这种老歌红歌dj版有种气血充足浑身充满干劲的感觉", author: "怀师", date: "2026年4月8日" },
+  { text: "要不要让claude鉴一下ai", author: "怀师", date: "2026年4月9日" },
+  { text: "萌萌", author: "怀师", date: "2026年4月9日" },
+  { text: "就是用很怪的排比句", author: "怀师", date: "2026年4月9日" },
+  { text: "不是... 不是... 而是...", author: "怀师", date: "2026年4月9日" },
+  { text: "还有那种", author: "怀师", date: "2026年4月9日" },
+  { text: "哈哈哈哈哈哈哈哈", author: "怀师", date: "2026年4月9日" },
+  { text: "美人0", author: "怀师", date: "2026年4月8日" },
+  { text: "等我啥时候看看可以", author: "怀师", date: "2026年4月8日" },
+  { text: "哇塞好高的评价", author: "怀师", date: "2026年4月8日" },
+  { text: "我记得有个精灵王子可好看了", author: "怀师", date: "2026年4月8日" },
+  { text: "我肯定看过一点 但没完整的看过", author: "怀师", date: "2026年4月8日" },
+  { text: "那说明剧情很精彩", author: "怀师", date: "2026年4月8日" },
+  { text: "那看的很爽了", author: "怀师", date: "2026年4月8日" },
+  { text: "这么久", author: "怀师", date: "2026年4月8日" },
+  { text: "嘎吱嘎吱", author: "怀师", date: "2026年4月8日" },
+  { text: "想踩", author: "怀师", date: "2026年4月8日" },
+  { text: "哇好漂亮啊", author: "怀师", date: "2026年4月8日" },
+  { text: "哎我也想悠闲的出去走走", author: "怀师", date: "2026年4月8日" },
+  { text: "okok", author: "怀师", date: "2026年4月8日" },
+  { text: "但不确定是不是这对", author: "怀师", date: "2026年4月8日" },
+  { text: "我好像刷到过", author: "怀师", date: "2026年4月8日" },
+  { text: "那应该有点刀吧", author: "怀师", date: "2026年4月8日" },
+  { text: "我选择一边忏悔一边吃", author: "怀师", date: "2026年4月8日" },
+  { text: "但是还是好背德", author: "怀师", date: "2026年4月8日" },
+  { text: "yes给我看爽了", author: "怀师", date: "2026年4月8日" },
+  { text: "那可以生生世世都遇到他了", author: "怀师", date: "2026年4月8日" },
+  { text: "听着不错", author: "怀师", date: "2026年4月8日" },
+  { text: "好好磕", author: "怀师", date: "2026年4月8日" },
+  { text: "我忏悔", author: "怀师", date: "2026年4月8日" },
+  { text: "可以可以", author: "怀师", date: "2026年4月8日" },
+  { text: "我找到了一个很古早剪辑风格的视频", author: "怀师", date: "2026年4月8日" },
+  { text: "是的", author: "怀师", date: "2026年4月8日" },
+  { text: "好幸福", author: "怀师", date: "2026年4月8日" },
+  { text: "而且我搜了一下那种能论证他俩是真的的糖点更多了", author: "怀师", date: "2026年4月8日" },
+  { text: "说起来我第一对真情实感磕的cp竟然最近还在发糖", author: "怀师", date: "2026年4月8日" },
+  { text: "那很有意义了", author: "怀师", date: "2026年4月8日" },
+  { text: "哦这样！", author: "怀师", date: "2026年4月8日" },
+  { text: "wow", author: "怀师", date: "2026年4月8日" },
+  { text: "所以这是海狮磕的第一对吗", author: "怀师", date: "2026年4月8日" },
+  { text: "依旧挚友哈哈哈", author: "怀师", date: "2026年4月8日" },
+  { text: "好像就是海狮说的这对", author: "怀师", date: "2026年4月8日" },
+  { text: "b站剪辑", author: "怀师", date: "2026年4月8日" },
+  { text: "如果我磕的所有rps都像他们这样就好了", author: "怀师", date: "2026年4月8日" },
+  { text: "并且十指相扣", author: "怀师", date: "2026年4月8日" },
+  { text: "是的", author: "怀师", date: "2026年4月8日" },
+  { text: "正主在", author: "怀师", date: "2026年4月8日" },
+  { text: "而且作为团内最火的两位 dw打的不可开交时", author: "怀师", date: "2026年4月8日" },
+  { text: "他俩之前磕的人太多了被公司要求避嫌", author: "怀师", date: "2026年4月8日" },
+  { text: "一方打了唇环之后另一方嘴唇上有唇环印", author: "怀师", date: "2026年4月8日" },
+  { text: "我还看过一个特别锤的", author: "怀师", date: "2026年4月8日" },
+  { text: "这是现役最火韩团", author: "怀师", date: "2026年4月8日" },
+  { text: "不知道是不是真的", author: "怀师", date: "2026年4月8日" },
+  { text: "我之前磕的时候还刷到过说有狗仔拍到他俩亲嘴", author: "怀师", date: "2026年4月8日" },
+  { text: "真忘了这茬了", author: "怀师", date: "2026年4月8日" },
+  { text: "我19年追的", author: "怀师", date: "2026年4月8日" },
+  { text: "他们13年出道15年火的", author: "怀师", date: "2026年4月8日" },
+  { text: "哈哈哈哈哈哈没事", author: "怀师", date: "2026年4月8日" },
+  { text: "哦原来是这样（", author: "怀师", date: "2026年4月8日" },
+  { text: "虽然是现役最火吧但是他们是限韩令之后出道的", author: "怀师", date: "2026年4月8日" },
+  { text: "这么火的吗", author: "怀师", date: "2026年4月8日" },
+  { text: "我去", author: "怀师", date: "2026年4月8日" },
+  { text: "海狮你知道他们", author: "怀师", date: "2026年4月8日" },
+  { text: "？", author: "怀师", date: "2026年4月8日" },
+  { text: "防弹少年团", author: "怀师", date: "2026年4月8日" },
+  { text: "bts", author: "怀师", date: "2026年4月8日" },
+  { text: "都连上了哈哈哈", author: "怀师", date: "2026年4月8日" },
+  { text: "我当时入坑双琴还是因为他们瑞萍了blackpink的歌", author: "怀师", date: "2026年4月8日" },
+  { text: "刚去完线下他俩就爆瓜了", author: "怀师", date: "2026年4月8日" },
+  { text: "运气最不好的就是双琴", author: "怀师", date: "2026年4月8日" },
+  { text: "是的", author: "怀师", date: "2026年4月8日" },
+  { text: "虽然我现在也不怎么看kpop吧", author: "怀师", date: "2026年4月8日" },
+  { text: "但是我第一个追的（got7）还有喜欢的最久的两个（bts seventeen）还有最喜欢的女团（twice）都没人退团", author: "怀师", date: "2026年4月8日" },
+  { text: "最近kpop好几个团都有人退团", author: "怀师", date: "2026年4月8日" },
+  { text: "其实我追星运还是不错的", author: "怀师", date: "2026年4月8日" },
+  { text: "是的", author: "怀师", date: "2026年4月8日" },
+  { text: "哈哈哈哈大概20年之后就没再关注了", author: "怀师", date: "2026年4月8日" },
+  { text: "双琴你们作为前推很拿不出手知道吗", author: "怀师", date: "2026年4月8日" },
+  { text: "我扫了一眼还以为是同人文", author: "怀师", date: "2026年4月9日" },
+  { text: "？", author: "怀师", date: "2026年4月9日" },
+  { text: "真的我们考试给的文章旁边就是标数字", author: "怀师", date: "2026年4月8日" },
+  { text: "有个旁边的数字更像小散文了", author: "怀师", date: "2026年4月8日" },
+  { text: "哈哈哈哈哈哈哈", author: "怀师", date: "2026年4月8日" },
+  { text: "主要是遇到了好亲友嘿嘿", author: "怀师", date: "2026年4月8日" },
+  { text: "还好跑路了", author: "怀师", date: "2026年4月8日" },
+  { text: "后来想想竞体都这样", author: "怀师", date: "2026年4月8日" },
+  { text: "我看到之后给我气的啊", author: "怀师", date: "2026年4月8日" },
+  { text: "那很好了", author: "怀师", date: "2026年4月8日" },
+  { text: "鱼师讲的好可爱哦", author: "怀师", date: "2026年4月8日" },
+  { text: "哦对海狮最近有吃到跳水那个瓜吗", author: "怀师", date: "2026年4月8日" },
+  { text: "我都是抱着一个尊重理解的态度", author: "怀师", date: "2026年4月9日" },
+  { text: "我也有朋友跟我说她吃很难评的产品", author: "怀师", date: "2026年4月9日" },
+  { text: "感觉陌生人说我可以接受 熟人不行", author: "怀师", date: "2026年4月9日" },
+  { text: "什么这竟然很常见吗（）", author: "怀师", date: "2026年4月9日" },
+  { text: "诋毁人家的爱好", author: "怀师", date: "2026年4月9日" },
+  { text: "说我家产难磕比骂我还难接受", author: "怀师", date: "2026年4月9日" },
+  { text: "好吓人的一句话", author: "怀师", date: "2026年4月9日" },
+  { text: "捡口元白", author: "怀师", date: "2026年4月9日" },
+  { text: "笑死我了", author: "怀师", date: "2026年4月9日" },
+  { text: "低山臭水遇知音", author: "怀师", date: "2026年4月9日" },
+  { text: "追kpop的都知道经典的出道前爆黑料出道后反转", author: "怀师", date: "2026年4月9日" },
+  { text: "竟然有黑红营销", author: "怀师", date: "2026年4月9日" },
+  { text: "嬷了", author: "怀师", date: "2026年4月9日" },
+  { text: "是的因为是现代设定", author: "怀师", date: "2026年4月9日" },
+  { text: "我还以为我看漏了章节", author: "怀师", date: "2026年4月9日" },
+  { text: "前一章还是表白被拒后一章直接开始强制爱了", author: "怀师", date: "2026年4月9日" },
+  { text: "昭白", author: "怀师", date: "2026年4月9日" },
+  { text: "哈哈哈哈吧我一看到他就觉得他好嬷", author: "怀师", date: "2026年4月9日" },
+  { text: "教资融化中", author: "怀师", date: "2026年4月9日" },
+  { text: "确实", author: "怀师", date: "2026年4月9日" },
+  { text: "正好看到这了 和鱼师刚刚截的描述有点像", author: "怀师", date: "2026年4月9日" },
+  { text: "而且ao3不收钱", author: "怀师", date: "2026年4月9日" },
+  { text: "还是少了一些", author: "怀师", date: "2026年4月9日" },
+  { text: "是的", author: "怀师", date: "2026年4月9日" },
+  { text: "家产也是火了都有ai圈钱文了", author: "怀师", date: "2026年4月9日" },
+  { text: "这就是为什么我都不怎么刷lof了", author: "怀师", date: "2026年4月9日" },
+  { text: "lof上经常能看到ai文", author: "怀师", date: "2026年4月9日" },
+  { text: "这个太ai了", author: "怀师", date: "2026年4月9日" },
+  { text: "我草", author: "怀师", date: "2026年4月9日" },
+  { text: "萌呀", author: "怀师", date: "2026年4月11日" },
+  { text: "这个最后一句有种熟悉的感觉", author: "怀师", date: "2026年4月11日" },
+  { text: "用的词也很妙", author: "怀师", date: "2026年4月11日" },
+  { text: "古人好会描写美景", author: "怀师", date: "2026年4月11日" },
+  { text: "好美啊", author: "怀师", date: "2026年4月11日" },
+  { text: "好多啊", author: "怀师", date: "2026年4月11日" },
+  { text: "全莫阵容", author: "怀师", date: "2026年4月11日" },
+  { text: "哇唔", author: "怀师", date: "2026年4月11日" },
+  { text: "怎么说", author: "怀师", date: "2026年4月11日" },
+  { text: "好诡异", author: "怀师", date: "2026年4月11日" },
+  { text: "竟然有人磕他俩", author: "怀师", date: "2026年4月11日" },
+  { text: "？", author: "怀师", date: "2026年4月11日" },
+  { text: "对我朋友进行了一场酣畅淋漓的安利", author: "怀师", date: "2026年4月9日" },
+  { text: "现在好像很多人爱磕恨海情天", author: "怀师", date: "2026年4月9日" },
+  { text: "只有情天没有恨海", author: "怀师", date: "2026年4月9日" },
+  { text: "谁允许玄亮出现在这里的", author: "怀师", date: "2026年4月9日" },
+  { text: "我找下", author: "怀师", date: "2026年4月9日" },
+  { text: "评论区有人提名", author: "怀师", date: "2026年4月9日" },
+  { text: "对", author: "怀师", date: "2026年4月9日" },
+  { text: "对", author: "怀师", date: "2026年4月9日" },
+  { text: "我曾经用ai降过ai率", author: "怀师", date: "2026年4月9日" },
+  { text: "可以试试哈哈哈", author: "怀师", date: "2026年4月9日" },
+  { text: "今天刷到又被这对硬控了", author: "怀师", date: "2026年4月9日" },
+  { text: "b站up主lex和他前妻", author: "怀师", date: "2026年4月9日" },
+  { text: "那很聪明了", author: "怀师", date: "2026年4月9日" },
+  { text: "哈哈哈哈是什么", author: "怀师", date: "2026年4月9日" },
+  { text: "我真的第一次类似的类型", author: "怀师", date: "2026年4月9日" },
+  { text: "我有吗", author: "怀师", date: "2026年4月9日" },
+  { text: "我想到了一对", author: "怀师", date: "2026年4月9日" },
+  { text: "话说", author: "怀师", date: "2026年4月9日" },
+  { text: "第一次做出类似的人格", author: "怀师", date: "2026年4月9日" },
+  { text: "？", author: "怀师", date: "2026年4月9日" },
+  { text: "我来试试", author: "怀师", date: "2026年4月9日" },
+  { text: "爽", author: "怀师", date: "2026年4月9日" },
+  { text: "我磕晕了", author: "怀师", date: "2026年4月9日" },
+  { text: "好多啊哈哈哈哈", author: "怀师", date: "2026年4月9日" },
+  { text: "一共有多少种哈哈哈哈", author: "怀师", date: "2026年4月9日" },
+  { text: "这么多种诶", author: "怀师", date: "2026年4月9日" },
+  { text: "因为结婚了之后如果离婚了可以分财产", author: "怀师", date: "2026年4月9日" },
+  { text: "为了不分手所以结婚", author: "怀师", date: "2026年4月9日" },
+  { text: "这对让我印象最深的就是", author: "怀师", date: "2026年4月9日" },
+  { text: "全明星阵容", author: "怀师", date: "2026年4月9日" },
+  { text: "磕一口", author: "怀师", date: "2026年4月9日" },
+  { text: "这个贴主跟我的心理一模一样", author: "怀师", date: "2026年4月9日" },
+  { text: "这个我也听说过", author: "怀师", date: "2026年4月9日" },
+  { text: "挺好挺好", author: "怀师", date: "2026年4月9日" },
+  { text: "不容易啊", author: "怀师", date: "2026年4月9日" },
+  { text: "buff叠满还这么阳间", author: "怀师", date: "2026年4月9日" },
+  { text: "听说过好像", author: "怀师", date: "2026年4月9日" },
+  { text: "这是那对北魏骨吗", author: "怀师", date: "2026年4月9日" },
+  { text: "什么", author: "怀师", date: "2026年4月9日" },
+  { text: "梦幻联动", author: "怀师", date: "2026年4月9日" },
+  { text: "我今天刷到是因为lex觉得网友磕他和他前妻就像磕汪东城炎亚纶一样", author: "怀师", date: "2026年4月9日" },
+  { text: "但是4i也不是不行", author: "怀师", date: "2026年4月10日" },
+  { text: "我当梦女大部分时候还是bg的", author: "怀师", date: "2026年4月10日" },
+  { text: "老公想当1了来找我", author: "怀师", date: "2026年4月10日" },
+  { text: "而且我还能当梦女嬷", author: "怀师", date: "2026年4月10日" },
+  { text: "我好像从来没当过公公", author: "怀师", date: "2026年4月10日" },
+  { text: "是那个人类国王吗", author: "怀师", date: "2026年4月10日" },
+  { text: "那和海狮很互补了", author: "怀师", date: "2026年4月10日" },
+  { text: "我一般是偏右", author: "怀师", date: "2026年4月10日" },
+  { text: "笑死了", author: "怀师", date: "2026年4月9日" },
+  { text: "wow", author: "怀师", date: "2026年4月9日" },
+  { text: "同吃同睡", author: "怀师", date: "2026年4月9日" },
+  { text: "哈哈哈", author: "怀师", date: "2026年4月9日" },
+  { text: "一嬷一样", author: "怀师", date: "2026年4月9日" },
+  { text: "那可以多调戏调戏（不是", author: "怀师", date: "2026年4月10日" },
+  { text: "？", author: "怀师", date: "2026年4月10日" },
+  { text: "这篇看完之后我好想哭", author: "怀师", date: "2026年4月10日" },
+  { text: "会嬷粉的话应该要会嬷各种粉哈哈哈", author: "怀师", date: "2026年4月10日" },
+  { text: "不用逃大胆叫", author: "怀师", date: "2026年4月10日" },
+  { text: "好好看", author: "怀师", date: "2026年4月10日" },
+  { text: "ao3上有一篇文叫泉门复开", author: "怀师", date: "2026年4月10日" },
+  { text: "哈哈哈哈哈哈哈", author: "怀师", date: "2026年4月10日" },
+  { text: "对了说到元白", author: "怀师", date: "2026年4月10日" },
+  { text: "寻找睡前读物中", author: "怀师", date: "2026年4月10日" },
+  { text: "那很好了", author: "怀师", date: "2026年4月10日" },
+  { text: "确实确实", author: "怀师", date: "2026年4月10日" },
+  { text: "接受能力这块", author: "怀师", date: "2026年4月10日" },
+  { text: "今年可能会好点吧", author: "怀师", date: "2026年4月10日" },
+  { text: "感觉会很开心也会很累", author: "怀师", date: "2026年4月10日" },
+  { text: "怎么样", author: "怀师", date: "2026年4月10日" },
+  { text: "酣畅淋漓的购买同人制品（平时基本不买", author: "怀师", date: "2026年4月10日" },
+  { text: "没去过", author: "怀师", date: "2026年4月10日" },
+  { text: "我还挺想去这种的", author: "怀师", date: "2026年4月10日" },
+  { text: "加油海狮", author: "怀师", date: "2026年4月10日" },
+  { text: "确实是物理意义上的地下", author: "怀师", date: "2026年4月10日" },
+  { text: "我妈还给我发营销号视频了", author: "怀师", date: "2026年4月10日" },
+  { text: "是吗哈哈哈哈", author: "怀师", date: "2026年4月10日" },
+  { text: "这次清明节史同女上坟是不是出圈了", author: "怀师", date: "2026年4月10日" },
+  { text: "主要是同人很难甜过蒸煮了", author: "怀师", date: "2026年4月10日" },
+  { text: "我也没怎么看过哈哈哈", author: "怀师", date: "2026年4月10日" },
+  { text: "哈哈哈哈哈哈我也是会固定每家店就吃那一种", author: "怀师", date: "2026年4月10日" },
+  { text: "我日常小选择像吃什么很纠结 但是大选择又很草率（拖到最后不得不选了草草选一个", author: "怀师", date: "2026年4月10日" },
+  { text: "海狮会选择困难吗", author: "怀师", date: "2026年4月10日" },
+  { text: "就平常", author: "怀师", date: "2026年4月10日" },
+  { text: "那很坏了", author: "怀师", date: "2026年4月10日" },
+  { text: "？", author: "怀师", date: "2026年4月10日" },
+  { text: "海狮一般做选择会纠结吗", author: "怀师", date: "2026年4月10日" },
+  { text: "我要是不考试我也想去哈哈哈", author: "怀师", date: "2026年4月10日" },
+  { text: "不过感觉还是可以去体验一下", author: "怀师", date: "2026年4月10日" },
+  { text: "确实确实", author: "怀师", date: "2026年4月10日" },
+  { text: "听着不错", author: "怀师", date: "2026年4月10日" },
+  { text: "好像不让日本ip来了", author: "怀师", date: "2026年4月10日" },
+  { text: "我才看到这个tag[苦涩]", author: "怀师", date: "2026年4月10日" },
+  { text: "我现在也不纠结了选个差不多", author: "怀师", date: "2026年4月10日" },
+  { text: "对", author: "怀师", date: "2026年4月10日" },
+  { text: "真好会卖啊跟听广播剧一样", author: "怀师", date: "2026年4月10日" },
+  { text: "我又刷到语音厅cp了", author: "怀师", date: "2026年4月10日" },
+  { text: "我妈都测了", author: "怀师", date: "2026年4月10日" },
+  { text: "避免踩雷的风险", author: "怀师", date: "2026年4月10日" },
+  { text: "他的名字听上去就是那种温润公子的形象诶", author: "怀师", date: "2026年4月10日" },
+  { text: "啊？", author: "怀师", date: "2026年4月10日" },
+  { text: "感觉能被特意描写外貌的都长得不错", author: "怀师", date: "2026年4月10日" },
+  { text: "是的", author: "怀师", date: "2026年4月10日" },
+  { text: "确实", author: "怀师", date: "2026年4月10日" },
+  { text: "但也不是特别虐就是", author: "怀师", date: "2026年4月10日" },
+  { text: "反耳是看到虐文了", author: "怀师", date: "2026年4月10日" },
+  { text: "当一次元追还能想象自己喜欢的形象", author: "怀师", date: "2026年4月10日" },
+  { text: "是的是的", author: "怀师", date: "2026年4月10日" },
+  { text: "？", author: "怀师", date: "2026年4月10日" },
+  { text: "不是", author: "怀师", date: "2026年4月10日" },
+  { text: "好诡异的字体", author: "怀师", date: "2026年4月10日" },
+  { text: "这是不是一个很傻的问题", author: "怀师", date: "2026年4月10日" },
+  { text: "话说日文的书法和中文的书法会不会差不多", author: "怀师", date: "2026年4月10日" },
+  { text: "确实", author: "怀师", date: "2026年4月10日" },
+  { text: "草", author: "怀师", date: "2026年4月10日" },
+  { text: "感觉有点像给朋友起外号写到诗里没想到流传千年", author: "怀师", date: "2026年4月10日" },
+  { text: "哈哈哈哈哈哈", author: "怀师", date: "2026年4月10日" },
+  { text: "搞文人就是好啊同人女都不用自己想设定了（不是", author: "怀师", date: "2026年4月10日" },
+  { text: "还挺有意思", author: "怀师", date: "2026年4月10日" },
+  { text: "我一直在看b站上一个用塔罗牌占史同cp的", author: "怀师", date: "2026年4月10日" },
+  { text: "那很健康了", author: "怀师", date: "2026年4月10日" },
+  { text: "古人没手机玩如果不是到晚年应该体态都挺好的吧", author: "怀师", date: "2026年4月10日" },
+  { text: "依旧竹子塑", author: "怀师", date: "2026年4月10日" },
+  { text: "但是真的写的好美", author: "怀师", date: "2026年4月10日" },
+  { text: "狠狠喷香水", author: "怀师", date: "2026年4月11日" },
+  { text: "我感觉我的衣服馊了", author: "怀师", date: "2026年4月11日" },
+  { text: "如果是sci那直接爱上", author: "怀师", date: "2026年4月11日" },
+  { text: "端着碗进来端着论文出去了", author: "怀师", date: "2026年4月11日" },
+  { text: "鱼师是claude最严厉的母亲", author: "怀师", date: "2026年4月11日" },
+  { text: "我觉得鱼师是想让元白结婚", author: "怀师", date: "2026年4月11日" },
+  { text: "可以研究一下", author: "怀师", date: "2026年4月10日" },
+  { text: "确实", author: "怀师", date: "2026年4月10日" },
+  { text: "还是这是yxh编的", author: "怀师", date: "2026年4月10日" },
+  { text: "初三的时候", author: "怀师", date: "2026年4月13日" },
+  { text: "我记得有段时间我特别怕死", author: "怀师", date: "2026年4月13日" },
+  { text: "小时候真的是我本位思想", author: "怀师", date: "2026年4月13日" },
+  { text: "没事我哭着跟我奶奶说我想跟你一起死", author: "怀师", date: "2026年4月13日" },
+  { text: "有点像打坐之后那种可以平静接受一切的感觉", author: "怀师", date: "2026年4月13日" },
+  { text: "因为我觉得夜晚有种平静的buff", author: "怀师", date: "2026年4月13日" },
+  { text: "对于我来说还好", author: "怀师", date: "2026年4月13日" },
+  { text: "感觉我长大之后每次睡不着都在担心现实生活中发生的事", author: "怀师", date: "2026年4月13日" },
+  { text: "话说我小时候睡不着一般会思考一些哲学问题 关于死亡啊存在啊什么的 或者在自己的世界观里编故事", author: "怀师", date: "2026年4月13日" },
+  { text: "感觉这样会挺好玩的", author: "怀师", date: "2026年4月13日" },
+  { text: "是的是的", author: "怀师", date: "2026年4月13日" },
+  { text: "如果死亡的时候是已经去世的家人来接就好了", author: "怀师", date: "2026年4月13日" },
+  { text: "好像在哪里看过", author: "怀师", date: "2026年4月13日" },
+  { text: "草", author: "怀师", date: "2026年4月13日" },
+  { text: "那太好了", author: "怀师", date: "2026年4月13日" },
+  { text: "那很科学了", author: "怀师", date: "2026年4月13日" },
+  { text: "我现在觉得这样好浪漫（？", author: "怀师", date: "2026年4月13日" },
+  { text: "哈哈哈哈哈", author: "怀师", date: "2026年4月13日" },
+  { text: "一下就无法处理信息了", author: "怀师", date: "2026年4月13日" },
+  { text: "怎么说呢就有这个想法的一瞬间好像脑袋被重物砸了", author: "怀师", date: "2026年4月13日" },
+  { text: "我小时候也怕 但那次是进入了那种特别怕的状态", author: "怀师", date: "2026年4月13日" },
+  { text: "直接陷入了那种惊恐状态", author: "怀师", date: "2026年4月13日" },
+  { text: "有一天摸着自己的手想到死之后会变成白骨", author: "怀师", date: "2026年4月13日" },
+  { text: "那可以说他是在赞美人类作为一个整体而不是某个人（？", author: "怀师", date: "2026年4月13日" },
+  { text: "那就是说所有人都会被赞美到（）", author: "怀师", date: "2026年4月13日" },
+  { text: "有点道理", author: "怀师", date: "2026年4月13日" },
+  { text: "我读了感觉好温暖好有力量好平静（比划", author: "怀师", date: "2026年4月13日" },
+  { text: "那时间线很混乱了（？", author: "怀师", date: "2026年4月13日" },
+  { text: "虽然我还没看到那", author: "怀师", date: "2026年4月13日" },
+  { text: "我记得新三里曹操死之前说了这个", author: "怀师", date: "2026年4月13日" },
+  { text: "哦~", author: "怀师", date: "2026年4月13日" },
+  { text: "这好浪漫哦感觉", author: "怀师", date: "2026年4月13日" },
+  { text: "或者像那种", author: "怀师", date: "2026年4月13日" },
+  { text: "也是（）", author: "怀师", date: "2026年4月13日" },
+  { text: "那很好吃了", author: "怀师", date: "2026年4月13日" },
+  { text: "这是正史吗啊啊啊啊啊啊啊啊", author: "怀师", date: "2026年4月13日" },
+  { text: "不要老是和别人比，比弊时，我们会感到自卑，比利时，是一个欧洲国家。利弊相比时，弊少于利，多利是一只克隆羊。利少于弊，多弊 is free。", author: "怀师", date: "2026年4月13日" },
+  { text: "我去！我刚刷到这个文案", author: "怀师", date: "2026年4月13日" },
+  { text: "这样~", author: "怀师", date: "2026年4月13日" },
+  { text: "这个是他写的啊（）我第一次知道", author: "怀师", date: "2026年4月13日" },
+  { text: "哦~", author: "怀师", date: "2026年4月13日" },
+  { text: "没事没事活得久就好", author: "怀师", date: "2026年4月13日" },
+  { text: "惨惨的", author: "怀师", date: "2026年4月13日" },
+  { text: "哦不", author: "怀师", date: "2026年4月13日" },
+  { text: "所以他懂医术吗", author: "怀师", date: "2026年4月13日" },
+  { text: "好厉害", author: "怀师", date: "2026年4月13日" },
+  { text: "这么厉害", author: "怀师", date: "2026年4月13日" },
+  { text: "？", author: "怀师", date: "2026年4月13日" },
+  { text: "hhhhhhhhhhhh", author: "怀师", date: "2026年4月13日" },
+  { text: "随橙想可以救命", author: "怀师", date: "2026年4月13日" },
+  { text: "有点可怕", author: "怀师", date: "2026年4月13日" },
+  { text: "鱼师人真好", author: "怀师", date: "2026年4月14日" },
+  { text: "听起来像鸡尾酒的名字", author: "怀师", date: "2026年4月13日" },
+  { text: "哈哈哈哈哈这个谐音", author: "怀师", date: "2026年4月13日" },
+  { text: "你们三个人把日子过好", author: "怀师", date: "2026年4月13日" },
+  { text: "像那种一直问孩子到哪了", author: "怀师", date: "2026年4月13日" },
+  { text: "好萌好萌", author: "怀师", date: "2026年4月13日" },
+  { text: "随二百", author: "怀师", date: "2026年4月13日" },
+  { text: "在这个群里每天和群友们从诗词歌赋聊到人生哲学", author: "怀师", date: "2026年4月13日" },
+  { text: "有出息！", author: "怀师", date: "2026年4月13日" },
+  { text: "这么地狱吗", author: "怀师", date: "2026年4月13日" },
+  { text: "用麦克风反而声音更小了", author: "怀师", date: "2026年4月14日" },
+  { text: "我真服了", author: "怀师", date: "2026年4月14日" },
+  { text: "我自己来的", author: "怀师", date: "2026年4月14日" },
+  { text: "虽然蛮便宜的但是环境和设备好差", author: "怀师", date: "2026年4月14日" },
+  { text: "我第一次来香港的ktv", author: "怀师", date: "2026年4月14日" },
+  { text: "我的伤心之地", author: "怀师", date: "2026年4月14日" },
+  { text: "路过港大了", author: "怀师", date: "2026年4月14日" },
+  { text: "久违的坐了巴士", author: "怀师", date: "2026年4月14日" },
+  { text: "但是今天我妈允许我出来散心 所以我挺开心的", author: "怀师", date: "2026年4月14日" },
+  { text: "昨天晚上我失眠了 一共睡了一个多小时吧", author: "怀师", date: "2026年4月14日" },
+  { text: "(不是", author: "怀师", date: "2026年4月11日" },
+  { text: "开盒开到地府了", author: "怀师", date: "2026年4月11日" },
+  { text: "不要惹同人女", author: "怀师", date: "2026年4月11日" },
+  { text: "我刷到过", author: "怀师", date: "2026年4月11日" },
+  { text: "这个原帖应该是小红书上的", author: "怀师", date: "2026年4月11日" },
+  { text: "配上bgm真是一把好刀啊", author: "怀师", date: "2026年4月11日" },
+  { text: "我去看看！", author: "怀师", date: "2026年4月11日" },
+  { text: "哦~", author: "怀师", date: "2026年4月11日" },
+  { text: "藜杖就是拐杖吗", author: "怀师", date: "2026年4月11日" },
+  { text: "它很爱raft了", author: "怀师", date: "2026年4月12日" },
+  { text: "这个梗我去年刷到过", author: "怀师", date: "2026年4月12日" },
+  { text: "笑死刚要分享另一个二创", author: "怀师", date: "2026年4月12日" },
+  { text: "又刷到一个抽象的", author: "怀师", date: "2026年4月12日" },
+  { text: "真不是ai写的歌词吗", author: "怀师", date: "2026年4月12日" },
+  { text: "哈哈哈哈这是啥歌啊", author: "怀师", date: "2026年4月12日" },
+  { text: "正前方视角", author: "怀师", date: "2026年4月11日" },
+  { text: "哈哈哈哈这个好有意思", author: "怀师", date: "2026年4月12日" },
+  { text: "看不见", author: "怀师", date: "2026年4月12日" },
+  { text: "可能怕看不清吧", author: "怀师", date: "2026年4月12日" },
+  { text: "好高级", author: "怀师", date: "2026年4月12日" },
+  { text: "坏了这个我真磕过", author: "怀师", date: "2026年4月12日" },
+  { text: "萌呀", author: "怀师", date: "2026年4月12日" },
+  { text: "superidol的笑容", author: "怀师", date: "2026年4月12日" },
+  { text: "太癫了", author: "怀师", date: "2026年4月12日" },
+  { text: "这个太好笑了", author: "怀师", date: "2026年4月12日" },
+  { text: "？？", author: "怀师", date: "2026年4月12日" },
+  { text: "刷到一个搞中古史的外国人（？", author: "怀师", date: "2026年4月13日" },
+  { text: "感觉编剧很会发刀子", author: "怀师", date: "2026年4月13日" },
+  { text: "哈哈哈哈哈哈", author: "怀师", date: "2026年4月13日" },
+  { text: "感觉刀刀的", author: "怀师", date: "2026年4月13日" },
+  { text: "这个设定听起来怎么有点像郭敬明那个新剧", author: "怀师", date: "2026年4月13日" },
+  { text: "那很显年轻了", author: "怀师", date: "2026年4月13日" },
+  { text: "也是他哈哈哈", author: "怀师", date: "2026年4月13日" },
+  { text: "对不起但是哈哈哈哈哈哈哈", author: "怀师", date: "2026年4月12日" },
+  { text: "王安石的字真好看啊", author: "怀师", date: "2026年4月12日" },
+  { text: "怎么能做到每个人物都塑造的很离谱", author: "怀师", date: "2026年4月13日" },
+  { text: "我现在对陈建斌印象变差了", author: "怀师", date: "2026年4月13日" },
+  { text: "我上午一边看新三国吐槽一边写生物来着", author: "怀师", date: "2026年4月13日" },
+  { text: "麻麻的", author: "怀师", date: "2026年4月13日" },
+  { text: "听着不错", author: "怀师", date: "2026年4月13日" },
+  { text: "吃了啥", author: "怀师", date: "2026年4月13日" },
+  { text: "嘿嘿", author: "怀师", date: "2026年4月13日" },
+  { text: "吃点", author: "怀师", date: "2026年4月13日" },
+  { text: "还是太火了乐天", author: "怀师", date: "2026年4月13日" },
+  { text: "确实哈哈哈", author: "怀师", date: "2026年4月13日" },
+  { text: "芜湖", author: "怀师", date: "2026年4月13日" },
+  { text: "是的我也刷到过日文和韩文的同人文哈哈", author: "怀师", date: "2026年4月13日" },
+  { text: "强大到有很多人心甘情愿的为了它赴死", author: "怀师", date: "2026年4月13日" },
+  { text: "国家和宗教感觉就是很多人相信的narrative", author: "怀师", date: "2026年4月13日" },
+  { text: "故事的力量很强大", author: "怀师", date: "2026年4月13日" },
+  { text: "某种意义上来说是的", author: "怀师", date: "2026年4月13日" },
+  { text: "哈哈哈哈我小时候经常这么想", author: "怀师", date: "2026年4月13日" },
+  { text: "最近是发生了什么事启发到鱼师了吗", author: "怀师", date: "2026年4月13日" },
+  { text: "好像有点似懂非懂的", author: "怀师", date: "2026年4月13日" },
+  { text: "窗边的小豆豆", author: "怀师", date: "2026年4月13日" },
+  { text: "怎么说", author: "怀师", date: "2026年4月13日" },
+  { text: "belike", author: "怀师", date: "2026年4月13日" },
+  { text: "也是一种能力", author: "怀师", date: "2026年4月13日" },
+  { text: "坐电车爱上售票员", author: "海狮", date: "2026年4月2日" },
+  { text: "哎听上去各方面差异都很悬殊啊！", author: "海狮", date: "2026年4月2日" },
+  { text: "👂", author: "海狮", date: "2026年4月2日" },
+  { text: "甚至得到了为她写的诗，这追得很成功了", author: "海狮", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈哈哈", author: "海狮", date: "2026年4月2日" },
+  { text: "其实也不错", author: "海狮", date: "2026年4月2日" },
+  { text: "原来是赛博gay蜜啊，那没事了", author: "海狮", date: "2026年4月2日" },
+  { text: "所以这个男生其实是惠特曼梦男吗（？）", author: "海狮", date: "2026年4月2日" },
+  { text: "此爱非彼爱！", author: "海狮", date: "2026年4月2日" },
+  { text: "等温度再暖和点就可以准备穿裙子了！", author: "海狮", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈哈仁兄", author: "海狮", date: "2026年4月2日" },
+  { text: "就是同居doi的那种🤔", author: "海狮", date: "2026年4月2日" },
+  { text: "主要我感觉这个好像还不是标准南通", author: "海狮", date: "2026年4月2日" },
+  { text: "好长久啊", author: "海狮", date: "2026年4月2日" },
+  { text: "那确实是钻石婚了！", author: "海狮", date: "2026年4月2日" },
+  { text: "好宁静", author: "海狮", date: "2026年4月2日" },
+  { text: "那实在是难得", author: "海狮", date: "2026年4月2日" },
+  { text: "想起男同在一起半年就是金婚了", author: "海狮", date: "2026年4月2日" },
+  { text: "他们后来一直在一起吗", author: "海狮", date: "2026年4月2日" },
+  { text: "其实一见钟情真的不是见色起意吗", author: "海狮", date: "2026年4月2日" },
+  { text: "哎...", author: "海狮", date: "2026年4月2日" },
+  { text: "军训爱上教官，上学爱上老师，看病爱上医生（）", author: "海狮", date: "2026年4月2日" },
+  { text: "想起那个经典梗", author: "海狮", date: "2026年4月2日" },
+  { text: "除了掉电有点快以外还行", author: "海狮", date: "2026年4月2日" },
+  { text: "我的iPad是air4还是多少，反正也有四五年了，我现在还在用", author: "海狮", date: "2026年4月2日" },
+  { text: "太优雅了", author: "海狮", date: "2026年4月2日" },
+  { text: "记得之前推的一篇公众号文章里提到了", author: "海狮", date: "2026年4月2日" },
+  { text: "我对那个老师的宠物名字印象深刻", author: "海狮", date: "2026年4月2日" },
+  { text: "是哦，忘记了", author: "海狮", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈自损八百", author: "海狮", date: "2026年4月2日" },
+  { text: "后面将近二十年一直异地吗", author: "海狮", date: "2026年4月2日" },
+  { text: "那为什么不跟着走嘞，总觉得也不是什么很难克服的", author: "海狮", date: "2026年4月2日" },
+  { text: "还是说分手了惠特曼才搬家的（？）", author: "海狮", date: "2026年4月2日" },
+  { text: "所以搬家就关系淡了吗？刚才让我误以为没那么亲近", author: "海狮", date: "2026年4月2日" },
+  { text: "所以是确定的情人啊！", author: "海狮", date: "2026年4月2日" },
+  { text: "李贺这个....活得太短了[苦涩]晚年诗歌but 27岁", author: "海狮", date: "2026年4月3日" },
+  { text: "旧戏服离得近的时候能看到有地方都拉丝了[旺柴]", author: "海狮", date: "2026年4月3日" },
+  { text: "可能因为是新衣服", author: "海狮", date: "2026年4月3日" },
+  { text: "这个cos服看上去质感还可以🥺", author: "海狮", date: "2026年4月3日" },
+  { text: "今晚梦微之第一个墨魂特返要来了🥺彦如的墨魂乐天", author: "海狮", date: "2026年4月3日" },
+  { text: "哇是安卓没有的功能", author: "海狮", date: "2026年4月3日" },
+  { text: "看上去不错诶！", author: "海狮", date: "2026年4月3日" },
+  { text: "看列表的时候还能记得都是谁吗", author: "海狮", date: "2026年4月2日" },
+  { text: "我的天上限是多少", author: "海狮", date: "2026年4月2日" },
+  { text: "这个真的离谱", author: "海狮", date: "2026年4月2日" },
+  { text: "改的游戏里的一段（类似于橙光游戏那种走剧情），天音是玩家", author: "海狮", date: "2026年4月3日" },
+  { text: "这两个视频的视角刚好可以互补", author: "海狮", date: "2026年4月3日" },
+  { text: "可能潘彦如在我心里已经和乐天强关联，而且他长得就和墨魂的立绘有点像...换上那身衣服再搭上游戏里的BGM真的感觉次元壁破了", author: "海狮", date: "2026年4月3日" },
+  { text: "虽然之前也看到过很多墨魂cos，但是很明白那是cos，尤其是大部分妆都很重，二次元感会更强一些", author: "海狮", date: "2026年4月3日" },
+  { text: "返场视频看得哭了[苦涩]", author: "海狮", date: "2026年4月3日" },
+  { text: "大唐哥特风", author: "海狮", date: "2026年4月3日" },
+  { text: "但是好喜欢这一首，初中有一段时间特别喜欢李贺", author: "海狮", date: "2026年4月3日" },
+  { text: "大剧场第一排都不要1200", author: "海狮", date: "2026年4月4日" },
+  { text: "一点也不好...原价399，会员还有折扣", author: "海狮", date: "2026年4月4日" },
+  { text: "虽然这个位置确实非常好吧，我本来还在想能不能用我手上的座位换到这一排的位置，现在几乎死心了", author: "海狮", date: "2026年4月3日" },
+  { text: "这溢价别把我吓晕了", author: "海狮", date: "2026年4月3日" },
+  { text: "我之前用那种电蚊香", author: "海狮", date: "2026年4月3日" },
+  { text: "好惨 怀师那边都有蚊子了", author: "海狮", date: "2026年4月3日" },
+  { text: "有想法就写起来！", author: "海狮", date: "2026年4月3日" },
+  { text: "五月又可以见到潘乐天了🥺🥺", author: "海狮", date: "2026年4月3日" },
+  { text: "而且墨魂乐天也有一颗泪痣", author: "海狮", date: "2026年4月3日" },
+  { text: "除了发型来不及换成和墨魂立绘一样以外其他都完美复刻", author: "海狮", date: "2026年4月3日" },
+  { text: "我想看这个", author: "怀师", date: "2026年4月15日" },
+  { text: "爱炫耀的小孩的感觉", author: "怀师", date: "2026年4月15日" },
+  { text: "是的是的", author: "怀师", date: "2026年4月15日" },
+  { text: "“引以为荣”", author: "怀师", date: "2026年4月15日" },
+  { text: "我喜欢最后那个地狱笑话（）", author: "怀师", date: "2026年4月15日" },
+  { text: "好有活人感哈哈哈哈", author: "怀师", date: "2026年4月15日" },
+  { text: "？", author: "怀师", date: "2026年4月14日" },
+  { text: "一键跟唱开启了", author: "怀师", date: "2026年4月14日" },
+  { text: "没法做到在ktv吃饭", author: "怀师", date: "2026年4月14日" },
+  { text: "哇我刷到说古人写的江南其实是湖南", author: "怀师", date: "2026年4月15日" },
+  { text: "就这个松弛感", author: "怀师", date: "2026年4月15日" },
+  { text: "来朋友家撸兔子", author: "怀师", date: "2026年4月15日" },
+  { text: "想干吗吧", author: "怀师", date: "2026年4月15日" },
+  { text: "在他妈大考前一天", author: "怀师", date: "2026年4月15日" },
+  { text: "港大发给我发biomed的interview", author: "怀师", date: "2026年4月15日" },
+  { text: "是的哈哈哈", author: "怀师", date: "2026年4月15日" },
+  { text: "是的", author: "怀师", date: "2026年4月15日" },
+  { text: "我感性是0哈哈哈哈", author: "怀师", date: "2026年4月16日" },
+  { text: "好厉害", author: "怀师", date: "2026年4月15日" },
+  { text: "其实我也有但是很少被激发出来", author: "怀师", date: "2026年4月15日" },
+  { text: "有狠劲的人好有魅力", author: "怀师", date: "2026年4月15日" },
+  { text: "写的真好", author: "怀师", date: "2026年4月15日" },
+  { text: "哈哈哈哈怎么说", author: "怀师", date: "2026年4月15日" },
+  { text: "哈哈哈哈哈哈别这样说！", author: "怀师", date: "2026年4月15日" },
+  { text: "感觉也合理 湖南也经常下雨的好像", author: "怀师", date: "2026年4月15日" },
+  { text: "这个我也第一次知道哈哈", author: "怀师", date: "2026年4月15日" },
+  { text: "哦哈哈哈哈哈", author: "怀师", date: "2026年4月17日" },
+  { text: "And your friend Steve", author: "怀师", date: "2026年4月17日" },
+  { text: "哈哈哈哈哈哈", author: "怀师", date: "2026年4月17日" },
+  { text: "我也是！", author: "怀师", date: "2026年4月16日" },
+  { text: "海狮我们互补了哈哈哈", author: "怀师", date: "2026年4月16日" },
+  { text: "我感觉对我的概括还挺好 我就是比较擅长处理突发情况 搞长期布局很差", author: "怀师", date: "2026年4月16日" },
+  { text: "不着急", author: "怀师", date: "2026年4月16日" },
+  { text: "这套问题每一个我都好纠结", author: "怀师", date: "2026年4月16日" },
+  { text: "来了", author: "怀师", date: "2026年4月16日" },
+  { text: "开出来个挺满意的", author: "怀师", date: "2026年4月16日" },
+  { text: "我也对他印象蛮好的", author: "怀师", date: "2026年4月16日" },
+  { text: "我现在接电话都不敢先出声 怕被ai声音", author: "怀师", date: "2026年4月17日" },
+  { text: "这也太真了", author: "怀师", date: "2026年4月17日" },
+  { text: "这个我是有所耳闻的", author: "怀师", date: "2026年4月17日" },
+  { text: "脑子里闪过10对史同产品", author: "怀师", date: "2026年4月17日" },
+  { text: "当叉是吧", author: "怀师", date: "2026年4月17日" },
+  { text: "好绝", author: "海狮", date: "2026年4月1日" },
+  { text: "大家吐槽起来都文采飞扬", author: "海狮", date: "2026年4月1日" },
+  { text: "还有逊逊类瑜", author: "海狮", date: "2026年4月1日" },
+  { text: "这部剧有个很好笑的设定是策权和瑜是同时初见的，一见面在那里比试舞剑，舞到一半孙策说“你们俩继续吧我先走了”", author: "海狮", date: "2026年4月1日" },
+  { text: "有个吐槽的结尾说，这部剧就应该拿到史同only上搭个台子免费演给同人女看，而不是在上海大剧院，坐山顶还要花280", author: "海狮", date: "2026年4月1日" },
+  { text: "这个剧⬇️", author: "海狮", date: "2026年4月1日" },
+  { text: "一尊还酹江月都演完这么多天了我还在看大家的吐槽", author: "海狮", date: "2026年4月1日" },
+  { text: "这个条件干嘛来闯音乐剧，不如直接演话剧", author: "海狮", date: "2026年4月1日" },
+  { text: "好消息是新卡台词非常之好，坏消息是唱歌非常之差", author: "海狮", date: "2026年4月1日" },
+  { text: "在看大家的实时repo，心凉凉的", author: "海狮", date: "2026年4月1日" },
+  { text: "顺便今晚梦微之第一个白居易新卡首演，搭马啸", author: "海狮", date: "2026年4月1日" },
+  { text: "今天还有人cos演员太真了，结果骗得其他演员以为是同事的账号于是回关了", author: "海狮", date: "2026年4月1日" },
+  { text: "我申请当那根剑", author: "海狮", date: "2026年4月1日" },
+  { text: "结果今天真有那么一两个真的官号发新东西，大家都得点进主页小心翼翼确认", author: "海狮", date: "2026年4月1日" },
+  { text: "从昨天开始微博和小红书就涌现一大堆高仿号发卡司排期/cos演员什么的", author: "海狮", date: "2026年4月1日" },
+  { text: "我知道哈哈哈哈哈", author: "海狮", date: "2026年4月1日" },
+  { text: "所以鱼师四月初要先出去玩吗", author: "海狮", date: "2026年4月1日" },
+  { text: "恭喜鱼师免费！恭喜鱼师换新手机！恭喜鱼师重回小红书！", author: "海狮", date: "2026年4月1日" },
+  { text: "我来康康", author: "海狮", date: "2026年4月2日" },
+  { text: "这么快就搜到了", author: "海狮", date: "2026年4月2日" },
+  { text: "鱼师在手搓鬼畜的路上一骑绝尘了", author: "海狮", date: "2026年4月2日" },
+  { text: "我太好奇了能不能也创创我", author: "海狮", date: "2026年4月2日" },
+  { text: "怀师不要滑跪（扶起", author: "海狮", date: "2026年4月2日" },
+  { text: "哈哈哈哈我想象不出来音量键和男的的关系", author: "海狮", date: "2026年4月2日" },
+  { text: "我本来想比喻气球人或者两条蚯蚓之类的", author: "海狮", date: "2026年4月2日" },
+  { text: "啊啊啊啊啊啊啊", author: "海狮", date: "2026年4月2日" },
+  { text: "安卓的音量特效就很干巴", author: "海狮", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈我看我妈的苹果手机已经看习惯这个了", author: "海狮", date: "2026年4月2日" },
+  { text: "群友原话： 一唱就在折磨我的耳朵但我又不敢捂上生怕错过你曼妙的台词。", author: "海狮", date: "2026年4月1日" },
+  { text: "不过我会很乐意捏自设", author: "海狮", date: "2026年4月2日" },
+  { text: "OMG", author: "海狮", date: "2026年4月2日" },
+  { text: "天生铁血同人女（bushi", author: "海狮", date: "2026年4月2日" },
+  { text: "很奇怪，有些小孩从小就会编各种角色的故事，而我小时候似乎只会给现成的角色编故事，或者把自己代入世界观", author: "海狮", date: "2026年4月2日" },
+  { text: "就是经常刷到一些很漂亮的oc稿件配故事之类的，我感觉网友们会礼貌夸赞但并不会真的在意那些故事什么的", author: "海狮", date: "2026年4月2日" },
+  { text: "我觉得搞oc有一种无人分享的痛苦", author: "海狮", date: "2026年4月2日" },
+  { text: "我服了", author: "海狮", date: "2026年4月2日" },
+  { text: "突然很想送鱼师COS服", author: "海狮", date: "2026年4月2日" },
+  { text: "怀师说完之后就还好，但有点佩服帖主运用身边事物表现黄色主题的能力...", author: "海狮", date: "2026年4月2日" },
+  { text: "我还以为要苹果这种扭扭的", author: "海狮", date: "2026年4月2日" },
+  { text: "好了我懂了哈哈哈哈哈原来是安卓的音量键", author: "海狮", date: "2026年4月2日" },
+  { text: "不过要捏一个人和自己聊天的话，我还是更愿意捏个女生", author: "海狮", date: "2026年4月2日" },
+  { text: "感觉很nerd", author: "海狮", date: "2026年4月2日" },
+  { text: "小时候脑子里只有安妮和她的养父养母", author: "海狮", date: "2026年4月2日" },
+  { text: "metoo！长大发现它还有续集并且很拉跨之后有点心碎", author: "海狮", date: "2026年4月2日" },
+  { text: "之前玩魔法觉醒的时候也不知不觉捏出来一个长这样的女孩子", author: "海狮", date: "2026年4月2日" },
+  { text: "我之前刻意去想过我要捏oc的话会是什么样的，然后觉得我也会想要一个普通人，纯真的女孩子，碎花裙、麻花辫、雀斑，像绿山墙的安妮那样的", author: "海狮", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈给自己造了一个赛博搭子", author: "海狮", date: "2026年4月2日" },
+  { text: "提示词，意思是用ai生成他吗", author: "海狮", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈哈给当然要自己开挂", author: "海狮", date: "2026年4月2日" },
+  { text: "说起来oc圈子里最稀有的设定就是普通人，各种神仙遍地走", author: "海狮", date: "2026年4月2日" },
+  { text: "然后代入某个世界观", author: "海狮", date: "2026年4月2日" },
+  { text: "最近的那个sbti测试好搞笑", author: "海狮", date: "2026年4月9日" },
+  { text: "恨海情天很戏剧和拉扯", author: "海狮", date: "2026年4月9日" },
+  { text: "谁允许玄亮出现在这里的", author: "海狮", date: "2026年4月9日" },
+  { text: "让我看看评论区👀", author: "海狮", date: "2026年4月9日" },
+  { text: "或许刘邦韩信也算这一款", author: "海狮", date: "2026年4月9日" },
+  { text: "对", author: "海狮", date: "2026年4月9日" },
+  { text: "这个“拔不出来”太怪了吧", author: "海狮", date: "2026年4月9日" },
+  { text: "不管了总之现在看起来还有救，我好欣慰", author: "海狮", date: "2026年4月9日" },
+  { text: "笑死，可能首演太紧张了吧", author: "海狮", date: "2026年4月9日" },
+  { text: "原来如此", author: "海狮", date: "2026年4月9日" },
+  { text: "今天非常非常春天", author: "海狮", date: "2026年4月4日" },
+  { text: "长沙前段时间一直下雨，但是很凉爽我还挺喜欢的", author: "海狮", date: "2026年4月4日" },
+  { text: "五一路的人肯定很多", author: "海狮", date: "2026年4月4日" },
+  { text: "我不去大众景点应该还好", author: "海狮", date: "2026年4月4日" },
+  { text: "长沙今天难得放晴了", author: "海狮", date: "2026年4月4日" },
+  { text: "但我今天下午去公园逛逛，踏青也很适合清明节！", author: "海狮", date: "2026年4月4日" },
+  { text: "没有诶", author: "海狮", date: "2026年4月4日" },
+  { text: "放我去洛阳——", author: "海狮", date: "2026年4月4日" },
+  { text: "去扫墓吗", author: "海狮", date: "2026年4月4日" },
+  { text: "这个是原价吗，我已经记不得了", author: "海狮", date: "2026年4月4日" },
+  { text: "真当自己是明星呢", author: "海狮", date: "2026年4月4日" },
+  { text: "双琴真的太贵了", author: "海狮", date: "2026年4月4日" },
+  { text: "对着这个标题尽力往那个方向理解中...好像看懂了又好像没有", author: "海狮", date: "2026年4月7日" },
+  { text: "华强北打工人蒋师傅", author: "海狮", date: "2026年4月7日" },
+  { text: "这个最新的故事太好玩了", author: "海狮", date: "2026年4月7日" },
+  { text: "哈哈哈哈哈哈太好了", author: "海狮", date: "2026年4月4日" },
+  { text: "之前还看到过洋妞用“slash”这个词表示我们说的“ cp”", author: "海狮", date: "2026年4月4日" },
+  { text: "看ao3我觉得还挺明显的？", author: "海狮", date: "2026年4月4日" },
+  { text: "是这样的呀", author: "海狮", date: "2026年4月4日" },
+  { text: "因为怀师强调第一次，我以为是小众产品", author: "海狮", date: "2026年4月4日" },
+  { text: "我以为王安石欧阳修呢", author: "海狮", date: "2026年4月4日" },
+  { text: "我都宋不太熟", author: "海狮", date: "2026年4月4日" },
+  { text: "哈哈哈哈这个写得好可爱", author: "海狮", date: "2026年4月4日" },
+  { text: "现在也不是节假日，很适合玩啊", author: "海狮", date: "2026年4月8日" },
+  { text: "不过如果就在大陆玩的话可以说走就走！", author: "海狮", date: "2026年4月8日" },
+  { text: "ohno", author: "海狮", date: "2026年4月8日" },
+  { text: "对啦鱼师现在出去玩了吗", author: "海狮", date: "2026年4月8日" },
+  { text: "感觉周瑜字公瑾也是这个", author: "海狮", date: "2026年4月7日" },
+  { text: "这个应该就是怀师名字出处吧（？", author: "海狮", date: "2026年4月7日" },
+  { text: "字太多太快了都没来得及看清", author: "海狮", date: "2026年4月7日" },
+  { text: "这是个什么系列👀", author: "海狮", date: "2026年4月7日" },
+  { text: "鬓已星星也", author: "海狮", date: "2026年4月7日" },
+  { text: "是白头发哈哈哈哈哈", author: "海狮", date: "2026年4月7日" },
+  { text: "挑染好时髦", author: "海狮", date: "2026年4月7日" },
+  { text: "这张好听", author: "海狮", date: "2026年4月8日" },
+  { text: "在公园转了转", author: "海狮", date: "2026年4月8日" },
+  { text: "听红歌居然能认真学吗....", author: "海狮", date: "2026年4月8日" },
+  { text: "鱼师可以尝试用放大镜烧虫子（bushi", author: "海狮", date: "2026年4月8日" },
+  { text: "笑死我也刷到过这个", author: "海狮", date: "2026年4月8日" },
+  { text: "鱼师在说什么 难道我漏掉了什么聊天记录🐶", author: "海狮", date: "2026年4月8日" },
+  { text: "鱼师也可以考虑去北京玩然后每天爽看电影", author: "海狮", date: "2026年4月8日" },
+  { text: "我也好想去北京啊", author: "海狮", date: "2026年4月8日" },
+  { text: "哦对了这次北影节有指环王三部曲加长版连映", author: "海狮", date: "2026年4月8日" },
+  { text: "我好想去洛阳啊...", author: "海狮", date: "2026年4月8日" },
+  { text: "现在是洛阳牡丹赏花期呢", author: "海狮", date: "2026年4月8日" },
+  { text: "(先这样)", author: "海狮", date: "2026年4月8日" },
+  { text: "这个里面我最喜欢珊瑚颂", author: "海狮", date: "2026年4月8日" },
+  { text: "这首我爸老是唱", author: "海狮", date: "2026年4月8日" },
+  { text: "我用网易云分享怀师是不是听不了", author: "海狮", date: "2026年4月8日" },
+  { text: "笑死说起红歌我真的有不少可以推荐", author: "海狮", date: "2026年4月8日" },
+  { text: "但我觉得民主和平等应该是有区别的吧，虽然我政治学得不好", author: "海狮", date: "2026年4月8日" },
+  { text: "哦这听上去更像是平等（？）", author: "海狮", date: "2026年4月8日" },
+  { text: "🤔好高深", author: "海狮", date: "2026年4月8日" },
+  { text: "是从昆虫的行为里看到了民主吗", author: "海狮", date: "2026年4月8日" },
+  { text: "这种比喻出处是什么👂", author: "海狮", date: "2026年4月8日" },
+  { text: "白毛女+红色娘子军+鱼美人", author: "海狮", date: "2026年4月8日" },
+  { text: "小时候家里有这张砖，好好听", author: "海狮", date: "2026年4月8日" },
+  { text: "哦我听过这首", author: "海狮", date: "2026年4月8日" },
+  { text: "哦对我会一直推红色娘子军", author: "海狮", date: "2026年4月8日" },
+  { text: "其实都超经典的来着！", author: "海狮", date: "2026年4月8日" },
+  { text: "乱入一首世界共产主义红歌", author: "海狮", date: "2026年4月8日" },
+  { text: "其实是“寿数有限的新任帝王 x 他武艺超群的长生朋友”", author: "海狮", date: "2026年4月8日" },
+  { text: "哈哈哈哈哈这是我产品的右位", author: "海狮", date: "2026年4月8日" },
+  { text: "在原著已经很好的情况下丰富了很多细节", author: "海狮", date: "2026年4月8日" },
+  { text: "指环王是我看过最好的奇幻影视化", author: "海狮", date: "2026年4月8日" },
+  { text: "非常无敌的", author: "海狮", date: "2026年4月8日" },
+  { text: "但是完全不会无聊", author: "海狮", date: "2026年4月8日" },
+  { text: "指环王每一部都很长，第三部尤其长", author: "海狮", date: "2026年4月8日" },
+  { text: "那天在电影院坐了十个小时", author: "海狮", date: "2026年4月8日" },
+  { text: "距离上一次参加连映马拉松都过去五年了", author: "海狮", date: "2026年4月8日" },
+  { text: "哎一想到北影节有指环王重映，我的托尔金瘾又上来了", author: "海狮", date: "2026年4月8日" },
+  { text: "感觉是某种更朴素的思想", author: "海狮", date: "2026年4月8日" },
+  { text: "👂👂是rps吗", author: "海狮", date: "2026年4月8日" },
+  { text: "然后也是因为这一对开始学会用ao3和lof", author: "海狮", date: "2026年4月8日" },
+  { text: "也不是，但是是认真投入过很多感情的第一对", author: "海狮", date: "2026年4月8日" },
+  { text: "这应该就是我的cp口味启蒙", author: "海狮", date: "2026年4月8日" },
+  { text: "我爱并肩作战挚友组", author: "海狮", date: "2026年4月8日" },
+  { text: "al", author: "海狮", date: "2026年4月8日" },
+  { text: "👀", author: "海狮", date: "2026年4月8日" },
+  { text: "不是那种很痛很痛的刀法，很符合指环王整体的风格，怀师去看了就懂了[可怜]", author: "海狮", date: "2026年4月8日" },
+  { text: "这对在零几年电影刚上映的时候就很火，应该是国内互联网磕的最早的bl cp之一（）简直时代眼泪", author: "海狮", date: "2026年4月8日" },
+  { text: "其实就是人类x精灵寿命梗，不存在转世", author: "海狮", date: "2026年4月8日" },
+  { text: "是怀师喜欢的扭曲风味", author: "海狮", date: "2026年4月8日" },
+  { text: "感觉火了很久了一样，我好像高中就听说过", author: "海狮", date: "2026年4月8日" },
+  { text: "我记得Eddy也喜欢BTS来着）", author: "海狮", date: "2026年4月8日" },
+  { text: "我知道BTS呀", author: "海狮", date: "2026年4月8日" },
+  { text: "BTS里居然还有这么一对", author: "海狮", date: "2026年4月8日" },
+  { text: "啊居然", author: "海狮", date: "2026年4月8日" },
+  { text: "所以这是哪个团", author: "海狮", date: "2026年4月8日" },
+  { text: "就这么正大光明穿同款吗", author: "海狮", date: "2026年4月8日" },
+  { text: "这是哪个国家这么开放（）", author: "海狮", date: "2026年4月8日" },
+  { text: "我一会儿来看", author: "海狮", date: "2026年4月8日" },
+  { text: "👀", author: "海狮", date: "2026年4月8日" },
+  { text: "幸好一点开就看到了最后一句[旺柴]", author: "海狮", date: "2026年4月9日" },
+  { text: "没错没错！其实回忆起来基本都是快乐的", author: "海狮", date: "2026年4月8日" },
+  { text: "啊啊啊啊啊啊啊", author: "海狮", date: "2026年4月8日" },
+  { text: "不关注竞体", author: "海狮", date: "2026年4月8日" },
+  { text: "刷到了但我没注意", author: "海狮", date: "2026年4月8日" },
+  { text: "哈哈哈哈我记得", author: "海狮", date: "2026年4月8日" },
+  { text: "哇听上去运气很好", author: "海狮", date: "2026年4月8日" },
+  { text: "还好tsv没有塌在我最喜欢他们的时候", author: "海狮", date: "2026年4月8日" },
+  { text: "哇这也很久了", author: "海狮", date: "2026年4月8日" },
+  { text: "这个看起来像分手之后说的嘛", author: "海狮", date: "2026年4月9日" },
+  { text: "多看看冷圈的命苦投稿旧习惯了（", author: "海狮", date: "2026年4月9日" },
+  { text: "没事没事，就是异食癖怎么了", author: "海狮", date: "2026年4月9日" },
+  { text: "但把产品换成别的爱好的话这种对话应该挺常见的", author: "海狮", date: "2026年4月9日" },
+  { text: "这看起来是钕桐才可能出现的对话", author: "海狮", date: "2026年4月9日" },
+  { text: "哈哈哈哈哈哈那下肢坐得很稳了", author: "海狮", date: "2026年4月9日" },
+  { text: "这个不错不错", author: "海狮", date: "2026年4月9日" },
+  { text: "聊天记录里没人理！", author: "海狮", date: "2026年4月9日" },
+  { text: "这个烂梗当时大家都没反应，我再callback一下", author: "海狮", date: "2026年4月9日" },
+  { text: "生动形象", author: "海狮", date: "2026年4月9日" },
+  { text: "哈哈哈哈哈哈哈哈哈", author: "海狮", date: "2026年4月9日" },
+  { text: "求你们听这个视频", author: "海狮", date: "2026年4月9日" },
+  { text: "哦哦用词好现代！", author: "海狮", date: "2026年4月9日" },
+  { text: "好消息之，这位演第二场突然唱歌进步好多，疑似点石成金", author: "海狮", date: "2026年4月9日" },
+  { text: "马微之真是公嬷皆宜", author: "海狮", date: "2026年4月9日" },
+  { text: "当时说含泪怨妇是因为这个", author: "海狮", date: "2026年4月9日" },
+  { text: "梦微之是男人最好的医美", author: "海狮", date: "2026年4月9日" },
+  { text: "这一天来得好快", author: "海狮", date: "2026年4月9日" },
+  { text: "这是什么文👀", author: "海狮", date: "2026年4月9日" },
+  { text: "很像那种分手后为了伤对方会说的话", author: "海狮", date: "2026年4月9日" },
+  { text: "现在还有装死者和吗喽", author: "海狮", date: "2026年4月9日" },
+  { text: "什么鬼哈哈哈哈哈哈", author: "海狮", date: "2026年4月9日" },
+  { text: "我不认识诶", author: "海狮", date: "2026年4月9日" },
+  { text: "我现在朋友圈还有伪人、死者、屌丝、尤物和妈妈", author: "海狮", date: "2026年4月9日" },
+  { text: "其实和海象的sb下面那些项很多都一样", author: "海狮", date: "2026年4月9日" },
+  { text: "这里", author: "海狮", date: "2026年4月9日" },
+  { text: "我在这一堆里精准测出了那个最无聊的", author: "海狮", date: "2026年4月9日" },
+  { text: "很多都很怪", author: "海狮", date: "2026年4月9日" },
+  { text: "感觉十分浪漫主义", author: "海狮", date: "2026年4月9日" },
+  { text: "冯诞是元宏的小表叔，但是同年", author: "海狮", date: "2026年4月9日" },
+  { text: "元宏冯诞，非常纯爱的一组", author: "海狮", date: "2026年4月9日" },
+  { text: "甚至是叔侄+竹马+君臣", author: "海狮", date: "2026年4月9日" },
+  { text: "今晚惊觉之前路过但是没注意到过的一对是叔侄", author: "海狮", date: "2026年4月9日" },
+  { text: "↓", author: "海狮", date: "2026年4月9日" },
+  { text: "我好想测出这个僧人", author: "海狮", date: "2026年4月9日" },
+  { text: "不过我的匹配度比鱼师高一点", author: "海狮", date: "2026年4月9日" },
+  { text: "刚说完难撞型就和鱼师撞了", author: "海狮", date: "2026年4月9日" },
+  { text: "感觉这个比mbti要难撞型诶", author: "海狮", date: "2026年4月9日" },
+  { text: "铁血公公", author: "海狮", date: "2026年4月10日" },
+  { text: "魔戒那对的左位是我非常喜欢的角色，并且我磕他的cp绝对是左位，吃不下右位", author: "海狮", date: "2026年4月10日" },
+  { text: "我磕元白是微偏左位，磕昨天说的魔戒那对也是微偏左位，但一般都偏得不多", author: "海狮", date: "2026年4月9日" },
+  { text: "我没有诶", author: "海狮", date: "2026年4月9日" },
+  { text: "疑亦断袖", author: "海狮", date: "2026年4月9日" },
+  { text: "钱钟书：疑似南通", author: "海狮", date: "2026年4月9日" },
+  { text: "主要冯诞不争不抢吧", author: "海狮", date: "2026年4月9日" },
+  { text: "元积还是元宏后代来着，忘了第十几世孙", author: "海狮", date: "2026年4月9日" },
+  { text: "元宏是北魏孝文帝，汉化组组长", author: "海狮", date: "2026年4月9日" },
+  { text: "是的", author: "海狮", date: "2026年4月9日" },
+  { text: "我看过这个哈哈哈哈哈哈", author: "海狮", date: "2026年4月9日" },
+  { text: "收到🫡", author: "海狮", date: "2026年4月10日" },
+  { text: "虽然还无人实施", author: "海狮", date: "2026年4月10日" },
+  { text: "和列表聊起来的时候，大家都很想在 sd 的时候喊潘彦如妈妈然后立刻逃跑（）", author: "海狮", date: "2026年4月10日" },
+  { text: "白乐天完全是妈妈啊（突然）", author: "海狮", date: "2026年4月10日" },
+  { text: "但是元白里被照顾的总是左位🤭", author: "海狮", date: "2026年4月10日" },
+  { text: "而且大部分文里被心疼被照顾的总是右位", author: "海狮", date: "2026年4月10日" },
+  { text: "很多同人文/原耽里喜欢偏受或者凝受，我觉得也是很多人会偏右位的原因", author: "海狮", date: "2026年4月10日" },
+  { text: "可以的可以的", author: "海狮", date: "2026年4月10日" },
+  { text: "那是4i吗", author: "海狮", date: "2026年4月10日" },
+  { text: "不管是书里还是电影里都是苏点拉满的角色", author: "海狮", date: "2026年4月10日" },
+  { text: "还行，我买的不多主要是逛逛，抓到熟悉的角色 coser 就拍个照", author: "海狮", date: "2026年4月10日" },
+  { text: "cp 太大人太多了，真去了不知道会有多累", author: "海狮", date: "2026年4月10日" },
+  { text: "我去过北京一个小一点的漫展", author: "海狮", date: "2026年4月10日" },
+  { text: "不知道能不能抢到 cp 票", author: "海狮", date: "2026年4月10日" },
+  { text: "今年 cp32 有元白刘柳街道", author: "海狮", date: "2026年4月10日" },
+  { text: "不过今年清明最好笑的是把史同女的死人推称为“地偶”", author: "海狮", date: "2026年4月10日" },
+  { text: "我记得去年清明也", author: "海狮", date: "2026年4月10日" },
+  { text: "好像每年清明节都要来这么一下", author: "海狮", date: "2026年4月10日" },
+  { text: "没怎么看过元白同人文）", author: "海狮", date: "2026年4月10日" },
+  { text: "潘彦如是老艺术家作风", author: "海狮", date: "2026年4月10日" },
+  { text: "我好多都选了中立因为不知道怎么说", author: "海狮", date: "2026年4月10日" },
+  { text: "我的创新咋这么低，这不科学", author: "海狮", date: "2026年4月10日" },
+  { text: "好多问题我不知道怎么回答，因为完全要看情况", author: "海狮", date: "2026年4月10日" },
+  { text: "在吃这点上我很王安石（bushi）", author: "海狮", date: "2026年4月10日" },
+  { text: "我几乎天天吃食堂同一个窗口从不纠结", author: "海狮", date: "2026年4月10日" },
+  { text: "看是让我选什么（）", author: "海狮", date: "2026年4月10日" },
+  { text: "什么选择？", author: "海狮", date: "2026年4月10日" },
+  { text: "cp 很坑，一般都提前不到一周才开票，而五一的火车票提前两周就要抢", author: "海狮", date: "2026年4月10日" },
+  { text: "先尽量抢票", author: "海狮", date: "2026年4月10日" },
+  { text: "而且五一大家都有空", author: "海狮", date: "2026年4月10日" },
+  { text: "但还是有超级多其他 ip", author: "海狮", date: "2026年4月10日" },
+  { text: "被记载长得丑的举例⬆️以前学温庭筠的诗感觉特别美，而且他名字也特别美，知道是丑男以后幻灭一瞬", author: "海狮", date: "2026年4月10日" },
+  { text: "哼哼哼", author: "海狮", date: "2026年4月10日" },
+  { text: "其实也有很丑的，或者很高/很矮的", author: "海狮", date: "2026年4月10日" },
+  { text: "从文献古籍的描述里想象", author: "海狮", date: "2026年4月10日" },
+  { text: "哈哈哈哈就和司马光x缸一样", author: "海狮", date: "2026年4月10日" },
+  { text: "这个中文字体和英文比起来显得很不专业（bushi", author: "海狮", date: "2026年4月10日" },
+  { text: "这居然是元白文的tag吗.....", author: "海狮", date: "2026年4月10日" },
+  { text: "不过没有相片多了很多想象的空间", author: "海狮", date: "2026年4月10日" },
+  { text: "发明相机的人也需要努力穿越", author: "海狮", date: "2026年4月10日" },
+  { text: "鱼师熵增我熵减", author: "海狮", date: "2026年4月10日" },
+  { text: "话说这首诗亮点好多", author: "海狮", date: "2026年4月10日" },
+  { text: "但是他们还得每天伏案写字或者每天种地", author: "海狮", date: "2026年4月10日" },
+  { text: "把微之写的这几首诗标黄的地方连在一起看，大概就是竹塑微之和凤塑乐天以及反复callback", author: "海狮", date: "2026年4月10日" },
+  { text: "关于竹子塑还有好多可以考据的", author: "海狮", date: "2026年4月10日" },
+  { text: "美得登上语文书", author: "海狮", date: "2026年4月10日" },
+  { text: "是的是的", author: "海狮", date: "2026年4月10日" },
+  { text: "真的很美，筠的意思是竹子", author: "海狮", date: "2026年4月10日" },
+  { text: "而且花间词派", author: "海狮", date: "2026年4月10日" },
+  { text: "我感觉不一样，他们好像喜欢写得圆圆的", author: "海狮", date: "2026年4月10日" },
+  { text: "反正也不在服务范围内", author: "海狮", date: "2026年4月10日" },
+  { text: "总之不照顾中文用户", author: "海狮", date: "2026年4月10日" },
+  { text: "乐天自夸的时候说“苦教短李伏歌行”，夸元微之的时候说“短李爱应颠”，可怜的李公垂就这样成为朋友 play 的一环", author: "海狮", date: "2026年4月10日" },
+  { text: "（李绅是写锄禾日当午那位）", author: "海狮", date: "2026年4月10日" },
+  { text: "关于长得矮的，我感觉白乐天这一串“短李”让全天下都知道他有个叫李绅的朋友长得矮了", author: "海狮", date: "2026年4月10日" },
+  { text: "昔作芸香侣，三载不暂离 柢得两相望，不得长相随 愿为云与雨，会合天之垂", author: "海狮", date: "2026年4月10日" },
+  { text: "很有品", author: "海狮", date: "2026年4月10日" },
+  { text: "这个好像是识典古籍的默认字体", author: "海狮", date: "2026年4月10日" },
+  { text: "谢谢 是思源宋体", author: "海狮", date: "2026年4月10日" },
+  { text: "长沙下了两天雨气温又降下来了，现在二十度出头 湿漉漉的好舒服哟", author: "海狮", date: "2026年4月11日" },
+  { text: "但是会跳过最后一段", author: "海狮", date: "2026年4月11日" },
+  { text: "我喜欢看凤凰社！感觉处于一个故事慢慢变复杂了但又没有那么黑暗的状态（指校园文占比）", author: "海狮", date: "2026年4月11日" },
+  { text: "原来是这样的🤔", author: "海狮", date: "2026年4月11日" },
+  { text: "这个好爽", author: "海狮", date: "2026年4月11日" },
+  { text: "评论区最能共情的一条", author: "海狮", date: "2026年4月11日" },
+  { text: "我就说嘛哈哈哈哈", author: "海狮", date: "2026年4月11日" },
+  { text: "太强了鱼师好高的技术力", author: "海狮", date: "2026年4月11日" },
+  { text: "哈哈哈哈我知道但这样显得李绅好像Stevie", author: "海狮", date: "2026年4月11日" },
+  { text: "品鉴短李然后得出原地结婚吗（？", author: "海狮", date: "2026年4月11日" },
+  { text: "没有笔锋这种东西", author: "海狮", date: "2026年4月10日" },
+  { text: "上海音乐厅的舞台真的好小好深", author: "海狮", date: "2026年4月11日" },
+  { text: "哈哈哈哈哈哈不清楚的全用了0", author: "海狮", date: "2026年4月11日" },
+  { text: "最后四位应该不准但是很好笑", author: "海狮", date: "2026年4月11日" },
+  { text: "策瑜[苦涩]好痛好痛", author: "海狮", date: "2026年4月11日" },
+  { text: "可以去看看小亮最新的那个鉴定网络热门生物视频", author: "海狮", date: "2026年4月11日" },
+  { text: "是用藜这种植物的茎做的拐杖！", author: "海狮", date: "2026年4月11日" },
+  { text: "其实想起来这首诗是因为今天看无穷小亮的视频讲到藜杖的时候引用了这句（", author: "海狮", date: "2026年4月11日" },
+  { text: "嗯最后这句还挺有名的！", author: "海狮", date: "2026年4月11日" },
+  { text: "志南和尚的诗", author: "海狮", date: "2026年4月11日" },
+  { text: "引用一首", author: "海狮", date: "2026年4月11日" },
+  { text: "没看过赛尔号[敲打]", author: "海狮", date: "2026年4月12日" },
+  { text: "刷到过这个梗 +1", author: "海狮", date: "2026年4月12日" },
+  { text: "唱这句的时候东坡从左上角探出头来", author: "海狮", date: "2026年4月12日" },
+  { text: "它真的好爱 raft", author: "海狮", date: "2026年4月12日" },
+  { text: "这个手书还拿了墨魂官方办的同人征集活动优胜奖", author: "海狮", date: "2026年4月12日" },
+  { text: "我之前看这个笑抽了，非常高技术力的大作", author: "海狮", date: "2026年4月12日" },
+  { text: "啊哈哈哈哈哈哈哈这个梗好经典", author: "海狮", date: "2026年4月12日" },
+  { text: "笑死了我还以为是二创填词，没想到歌词真是这么写的", author: "海狮", date: "2026年4月12日" },
+  { text: "在梦微之里是刀在小甜剧里不是刀", author: "海狮", date: "2026年4月13日" },
+  { text: "看 repo 让我最感慨的是结尾那个幻化出来的人形消失的时候他俩也有一个擦肩扑空拥抱，瞬间想起梦微之三梦记🥲第三梦开头也是一个擦肩", author: "海狮", date: "2026年4月13日" },
+  { text: "挚友变水仙", author: "海狮", date: "2026年4月13日" },
+  { text: "话说，潘马昨天有一个共演的新剧首演了，bg 小甜剧但三人转，两个男角色是同一个人，他抽离了自己的“恋爱之心” 然后幻化出了另一个人形🤣", author: "海狮", date: "2026年4月13日" },
+  { text: "让我想起之前转的那个苏轼像中唐人的孩子的帖子", author: "海狮", date: "2026年4月13日" },
+  { text: "能看到真迹的感觉好幸福啊", author: "海狮", date: "2026年4月13日" },
+  { text: "但是这样的话视线是不是得上下来回看，为什么不直接做字幕屏呢", author: "海狮", date: "2026年4月12日" },
+  { text: "原来是上音歌剧院，记住了", author: "海狮", date: "2026年4月12日" },
+  { text: "翻译吗", author: "海狮", date: "2026年4月12日" },
+  { text: "我去这是什么", author: "海狮", date: "2026年4月12日" },
+  { text: "然后我今天一不小心加了致死量花椒油", author: "海狮", date: "2026年4月13日" },
+  { text: "米粉", author: "海狮", date: "2026年4月13日" },
+  { text: "我刚吃完午饭", author: "海狮", date: "2026年4月13日" },
+  { text: "好多薯条🍟", author: "海狮", date: "2026年4月13日" },
+  { text: "虽然元白是前两名，但这数量差太幽默了", author: "海狮", date: "2026年4月13日" },
+  { text: "乐天断崖式领先", author: "海狮", date: "2026年4月13日" },
+  { text: "但白居易在日本本来也人气很高", author: "海狮", date: "2026年4月13日" },
+  { text: "之前好像见过搞元白的樱花妹", author: "海狮", date: "2026年4月13日" },
+  { text: "还好还好，我们不也搞外国史吗", author: "海狮", date: "2026年4月13日" },
+  { text: "据说昨天的首演直接把轻喜剧演成重喜剧了", author: "海狮", date: "2026年4月13日" },
+  { text: "其实就是内心世界很丰富的感觉", author: "海狮", date: "2026年4月13日" },
+  { text: "yes yes", author: "海狮", date: "2026年4月13日" },
+  { text: "比如窗边的小豆豆、小木屋系列", author: "海狮", date: "2026年4月13日" },
+  { text: "然后我发现里面属于半自传的挺多", author: "海狮", date: "2026年4月13日" },
+  { text: "绿山墙的安妮是半自传吗，忘记了", author: "海狮", date: "2026年4月13日" },
+  { text: "那或许写自传的人会很有感触", author: "海狮", date: "2026年4月13日" },
+  { text: "但是是把我自己对世界的理解加在别人的故事上", author: "海狮", date: "2026年4月13日" },
+  { text: "想了想我在和朋友们安利 cp 的时候会对这句话有比较强烈的体验🤔", author: "海狮", date: "2026年4月13日" },
+  { text: "我昨天在思考小时候有哪些好看的女主角小说", author: "海狮", date: "2026年4月13日" },
+  { text: "！鱼师怎么知道我昨天刚又打开了绿山墙的安妮", author: "海狮", date: "2026年4月13日" },
+  { text: "新三国一直风评好差来着", author: "海狮", date: "2026年4月13日" },
+  { text: "虽然但是爽哉爽哉", author: "海狮", date: "2026年4月13日" },
+  { text: "记得之前看到，很多有过濒死经历的人都说濒死的一刻觉得很舒坦很幸福", author: "海狮", date: "2026年4月13日" },
+  { text: "自然的规律[睡]", author: "海狮", date: "2026年4月13日" },
+  { text: "我似乎会跳过白骨阶段直接想象大家都变成无机物了", author: "海狮", date: "2026年4月13日" },
+  { text: "我好像怕死的阶段比这个小，虽然不记得具体时间了", author: "海狮", date: "2026年4月13日" },
+  { text: "从自我中心意识到我就是npc", author: "海狮", date: "2026年4月13日" },
+  { text: "倒是小时候意识到自己是“老百姓”的那一刻很震惊，每次回想都觉得好好笑", author: "海狮", date: "2026年4月13日" },
+  { text: "但其实我想不起我具体的这么一刻了", author: "海狮", date: "2026年4月13日" },
+  { text: "我记得小时候想到死亡会很害怕", author: "海狮", date: "2026年4月13日" },
+  { text: "会想得非常绝望", author: "海狮", date: "2026年4月13日" },
+  { text: "睡不着的时候思考死亡和存在好吓人", author: "海狮", date: "2026年4月13日" },
+  { text: "内心戏很多）", author: "海狮", date: "2026年4月13日" },
+  { text: "是哦，卡拉马佐夫兄弟里的", author: "海狮", date: "2026年4月13日" },
+  { text: "他写的那个不要爱抽象的人，要爱具体的人，第一次读的时候大受震撼", author: "海狮", date: "2026年4月13日" },
+  { text: "每次提到爱着抽象的人和具体的人 都想起陀", author: "海狮", date: "2026年4月13日" },
+  { text: "听上去很博爱", author: "海狮", date: "2026年4月13日" },
+  { text: "表情包是给这个的", author: "海狮", date: "2026年4月13日" },
+  { text: "这太中西合璧了", author: "海狮", date: "2026年4月13日" },
+  { text: "?", author: "海狮", date: "2026年4月13日" },
+  { text: "其实兰亭集序里说“后之览者 亦将有感于斯文”也有一种已经在看着后世读者的感觉", author: "海狮", date: "2026年4月13日" },
+  { text: "啊就是这种感觉", author: "海狮", date: "2026年4月13日" },
+  { text: "是海涅的诗", author: "海狮", date: "2026年4月13日" },
+  { text: "死亡是凉爽的夏夜[睡]", author: "海狮", date: "2026年4月13日" },
+  { text: "乐天总是在计算元微之行程这一点真的很妈妈", author: "海狮", date: "2026年4月13日" },
+  { text: "看来我和鱼师都是老油条了", author: "海狮", date: "2026年4月13日" },
+  { text: "🆘🆘🆘哈哈哈哈哈哈", author: "海狮", date: "2026年4月13日" },
+  { text: "感觉心态很重要", author: "海狮", date: "2026年4月13日" },
+  { text: "自幼*", author: "海狮", date: "2026年4月13日" },
+  { text: "（自由体弱但是活了很久）", author: "海狮", date: "2026年4月13日" },
+  { text: "我感觉他是久病成医比较有经验那种", author: "海狮", date: "2026年4月13日" },
+  { text: "哈哈哈哈哈哈哈哈哈哈", author: "海狮", date: "2026年4月13日" },
+  { text: "不过原书没有了", author: "海狮", date: "2026年4月13日" },
+  { text: "this", author: "海狮", date: "2026年4月13日" },
+  { text: "啊啊啊啊原来确实是说尿", author: "海狮", date: "2026年4月13日" },
+  { text: "小猫和大猫", author: "海狮", date: "2026年4月15日" },
+  { text: "小孩和妈咪", author: "海狮", date: "2026年4月15日" },
+  { text: "很有道理的", author: "海狮", date: "2026年4月15日" },
+  { text: "这是史同占卜吗", author: "海狮", date: "2026年4月15日" },
+  { text: "和荀彧那个好萌，我前几天还刷到了有人画这个片段", author: "海狮", date: "2026年4月15日" },
+  { text: "哈哈哈哈哈哈哈", author: "海狮", date: "2026年4月15日" },
+  { text: "虹口区高考二模作文题", author: "海狮", date: "2026年4月14日" },
+  { text: "魔法少女鱼师", author: "海狮", date: "2026年4月14日" },
+  { text: "其实我最喜欢的谐音是百利甜和鸢尾汁😋", author: "海狮", date: "2026年4月13日" },
+  { text: "说到元白刘我又想 callback 这个了", author: "海狮", date: "2026年4月13日" },
+  { text: "应该说，古人的江南里有时也包括湖南🤔", author: "海狮", date: "2026年4月15日" },
+  { text: "搜了一下正是江南好风景真的是长沙，惊呆了", author: "海狮", date: "2026年4月15日" },
+  { text: "这个讲得还挺清楚的，学到了", author: "海狮", date: "2026年4月15日" },
+  { text: "好羡慕....怀师放假了吗", author: "海狮", date: "2026年4月15日" },
+  { text: "古代湖南不是挺蛮荒的吗", author: "海狮", date: "2026年4月15日" },
+  { text: "啊？我感觉不太可能吧", author: "海狮", date: "2026年4月15日" },
+  { text: "两年前还经常在 B 站刷到 Steven he 和 uncle Roger，现在也好久没见过了", author: "海狮", date: "2026年4月15日" },
+  { text: "哎不关注tsv之后，那些跟他们联动过的油管网红也没关注过了，不知道他们现状怎么样", author: "海狮", date: "2026年4月15日" },
+  { text: "虎妈还给我端水果", author: "海狮", date: "2026年4月15日" },
+  { text: "我也喜欢那个", author: "海狮", date: "2026年4月15日" },
+  { text: "虎妈2.0", author: "海狮", date: "2026年4月15日" },
+  { text: "等我晚点慢慢做", author: "海狮", date: "2026年4月16日" },
+  { text: "48 个问题", author: "海狮", date: "2026年4月16日" },
+  { text: "我也要玩", author: "海狮", date: "2026年4月16日" },
+  { text: "虽然说不出为什么好，但是我小时候看三国对他印象挺好的", author: "海狮", date: "2026年4月16日" },
+  { text: "陆逊挺好的诶", author: "海狮", date: "2026年4月16日" },
+  { text: "半部中国近代史都是湖南人的名字😋每次在我妈面前特别自豪地提起这个的时候她都要说“穷山恶水出刁民”，她酸了因为她是重庆人不是湖南人[旺柴]", author: "海狮", date: "2026年4月15日" },
+  { text: "⬆️", author: "海狮", date: "2026年4月15日" },
+  { text: "哈哈哈哈哈其实我还挺有作为“刁民”的身份认同感", author: "海狮", date: "2026年4月15日" },
+  { text: "咱们是穷山恶水出刁民😋", author: "海狮", date: "2026年4月15日" },
+  { text: "我觉得湖南天气比江南恶劣点", author: "海狮", date: "2026年4月15日" },
+  { text: "还有五黑框", author: "海狮", date: "2026年4月17日" },
+  { text: "其实首先想到的是 ggad（）", author: "海狮", date: "2026年4月17日" },
+  { text: "曹袁", author: "海狮", date: "2026年4月17日" },
+  { text: "是怀师之前发过的", author: "海狮", date: "2026年4月17日" },
+  { text: "我其实是想说 p1 这个姿势来着！", author: "海狮", date: "2026年4月17日" },
+  { text: "我刚刚刷到", author: "海狮", date: "2026年4月16日" },
+  { text: "为什么我最后一问选的是君主但结果是谋士", author: "海狮", date: "2026年4月16日" },
+  { text: "我喘口气，回家看看哈哈哈", author: "鱼师", date: "2026年4月1日" },
+  { text: "哈哈哈哈哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月1日" },
+  { text: "而且我现在换手机了，网上冲浪速度 +++", author: "鱼师", date: "2026年4月1日" },
+  { text: "*被抓包", author: "鱼师", date: "2026年4月1日" },
+  { text: "观察太仔细了哈哈哈哈", author: "鱼师", date: "2026年4月1日" },
+  { text: "我免费了", author: "鱼师", date: "2026年4月1日" },
+  { text: "我昨天最后一天上班", author: "鱼师", date: "2026年4月1日" },
+  { text: "是的", author: "鱼师", date: "2026年4月1日" },
+  { text: "哈哈哈哈哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月1日" },
+  { text: "是我一直以来的想法，现在也有一小部分人逐渐意识到了hhh", author: "鱼师", date: "2026年4月1日" },
+  { text: "最后可能只有人文活下来", author: "鱼师", date: "2026年4月1日" },
+  { text: "人文社科已死是错误的", author: "鱼师", date: "2026年4月1日" },
+  { text: "对不起好有病哈哈哈哈哈", author: "鱼师", date: "2026年4月2日" },
+  { text: "那来个更加意义不明的", author: "鱼师", date: "2026年4月2日" },
+  { text: "我觉得莫名其妙哈哈哈哈", author: "鱼师", date: "2026年4月2日" },
+  { text: "莫名其妙的压力效果", author: "鱼师", date: "2026年4月1日" },
+  { text: "对不起我觉得这个音量按键效果好神经啊哈哈哈哈", author: "鱼师", date: "2026年4月1日" },
+  { text: "憧憬了", author: "鱼师", date: "2026年4月1日" },
+  { text: "哈哈哈哈哈哈哈哈哈曼妙的台词", author: "鱼师", date: "2026年4月1日" },
+  { text: "唱歌很烂那烂完了呀", author: "鱼师", date: "2026年4月1日" },
+  { text: "哦不！", author: "鱼师", date: "2026年4月1日" },
+  { text: "笑死那可真不是时候", author: "鱼师", date: "2026年4月1日" },
+  { text: "感觉太投入的话会有！", author: "鱼师", date: "2026年4月2日" },
+  { text: "确实", author: "鱼师", date: "2026年4月2日" },
+  { text: "?", author: "鱼师", date: "2026年4月2日" },
+  { text: "草哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月2日" },
+  { text: "看不懂，我只是一条鱼", author: "鱼师", date: "2026年4月2日" },
+  { text: "我不管，可是套娃太沙雕了", author: "鱼师", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈哈哈草", author: "鱼师", date: "2026年4月2日" },
+  { text: "5分钟了怀师，比喻哪个我好好奇", author: "鱼师", date: "2026年4月2日" },
+  { text: "其实是这样的", author: "鱼师", date: "2026年4月2日" },
+  { text: "我去找找", author: "鱼师", date: "2026年4月2日" },
+  { text: "我脑内的那位就是普通人哈哈哈哈", author: "鱼师", date: "2026年4月2日" },
+  { text: "说起来，我之前脑了个角色，本来只是两句提示词的，但想着想着他自己起飞了", author: "鱼师", date: "2026年4月2日" },
+  { text: "天生铁血同人女", author: "鱼师", date: "2026年4月2日" },
+  { text: "ohh", author: "鱼师", date: "2026年4月2日" },
+  { text: "（虽然现在养鱼养很开心所以好像也不一定", author: "鱼师", date: "2026年4月2日" },
+  { text: "就像我之前说我不会和AI角色扮演", author: "鱼师", date: "2026年4月2日" },
+  { text: "我也觉得有很多个体差异", author: "鱼师", date: "2026年4月2日" },
+  { text: "oc圈总感觉还有很多额外的习俗（?", author: "鱼师", date: "2026年4月2日" },
+  { text: "感觉，自己心里有个角色，和搞oc，不像是一个东西", author: "鱼师", date: "2026年4月2日" },
+  { text: "确实", author: "鱼师", date: "2026年4月2日" },
+  { text: "我小时候看的时候完全没觉得安妮和那个男的是一对", author: "鱼师", date: "2026年4月2日" },
+  { text: "↑惠特曼小孩", author: "鱼师", date: "2026年4月2日" },
+  { text: "我发现我所有的oc想法都不会把外貌想太细", author: "鱼师", date: "2026年4月2日" },
+  { text: "绿山墙的安妮！我好喜欢她", author: "鱼师", date: "2026年4月2日" },
+  { text: "还真是哈哈哈哈哈", author: "鱼师", date: "2026年4月2日" },
+  { text: "正在电脑里找设定", author: "鱼师", date: "2026年4月2日" },
+  { text: "还行哈哈哈哈，有时候会想起来，挺有趣的", author: "鱼师", date: "2026年4月2日" },
+  { text: "所以他就是个，除了是惠特曼狂粉以外相当普通的人", author: "鱼师", date: "2026年4月2日" },
+  { text: "结果想着想着他成了一个人，我反而不想扔给Claude了（", author: "鱼师", date: "2026年4月2日" },
+  { text: "我原来想的是，给Claude一个设定：惠特曼狂粉，方便和我聊惠特曼", author: "鱼师", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈哈哈哈哈哈哈草", author: "鱼师", date: "2026年4月2日" },
+  { text: "这基本就是和惠特曼走的最近的平辈女的了（", author: "鱼师", date: "2026年4月2日" },
+  { text: "大概就是一位女士看了惠特曼的诗之后爱上他了，直接搬到他的城市去追求他，然后他们成为了朋友", author: "鱼师", date: "2026年4月2日" },
+  { text: "还真别说", author: "鱼师", date: "2026年4月2日" },
+  { text: "说起来有个惠特曼的八卦", author: "鱼师", date: "2026年4月2日" },
+  { text: "很无害了", author: "鱼师", date: "2026年4月2日" },
+  { text: "笑死", author: "鱼师", date: "2026年4月2日" },
+  { text: "（bushi", author: "鱼师", date: "2026年4月2日" },
+  { text: "还有一点原因，女的爱上惠特曼的话那性别错了呀[旺柴]", author: "鱼师", date: "2026年4月2日" },
+  { text: "可能是某种刻板印象，以及我觉得更有喜剧效果（）", author: "鱼师", date: "2026年4月2日" },
+  { text: "我也想过性别，我在想为什么这位仁兄是男的", author: "鱼师", date: "2026年4月2日" },
+  { text: "确实很典哈哈哈哈", author: "鱼师", date: "2026年4月2日" },
+  { text: "但其实惠特曼也不太有文人气质", author: "鱼师", date: "2026年4月2日" },
+  { text: "对，他对象不读诗", author: "鱼师", date: "2026年4月2日" },
+  { text: "他们就电车上认识的，直接一见钟情（", author: "鱼师", date: "2026年4月2日" },
+  { text: "叫 Peter Doyal，是电车售票员", author: "鱼师", date: "2026年4月2日" },
+  { text: "哦想起来了", author: "鱼师", date: "2026年4月2日" },
+  { text: "对不起我考古不到位忘了名字了，我去搜一下", author: "鱼师", date: "2026年4月2日" },
+  { text: "但惠特曼自己的cp不是文人", author: "鱼师", date: "2026年4月2日" },
+  { text: "她自己也是位很博学的诗人", author: "鱼师", date: "2026年4月2日" },
+  { text: "确实", author: "鱼师", date: "2026年4月2日" },
+  { text: "但后来她比惠特曼早去世，惠特曼给她写了首诗", author: "鱼师", date: "2026年4月2日" },
+  { text: "久经沙场的史同女：啊？就这？", author: "鱼师", date: "2026年4月2日" },
+  { text: "但有一首特别短特别好的", author: "鱼师", date: "2026年4月2日" },
+  { text: "惠特曼写过一大堆讲嗯，男士之间深厚感情的（）", author: "鱼师", date: "2026年4月2日" },
+  { text: "有一首诗", author: "鱼师", date: "2026年4月2日" },
+  { text: "惠特曼去世的时候他也去了", author: "鱼师", date: "2026年4月2日" },
+  { text: "那以这个标准可以说钻石婚了（）", author: "鱼师", date: "2026年4月2日" },
+  { text: "很健康了", author: "鱼师", date: "2026年4月2日" },
+  { text: "就喜欢一块遛弯那种", author: "鱼师", date: "2026年4月2日" },
+  { text: "但是他们也很细水长流", author: "鱼师", date: "2026年4月2日" },
+  { text: "我觉得是", author: "鱼师", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月2日" },
+  { text: "对哈哈哈！", author: "鱼师", date: "2026年4月2日" },
+  { text: "感觉他爱上电车售票员就特合理", author: "鱼师", date: "2026年4月2日" },
+  { text: "就很好笑", author: "鱼师", date: "2026年4月2日" },
+  { text: "一般共识是人被逼急了编的", author: "鱼师", date: "2026年4月2日" },
+  { text: "然后后世的所有人找来找去一点影子也没有[旺柴]", author: "鱼师", date: "2026年4月2日" },
+  { text: "说一派胡言，我其实有六个私生子[旺柴]", author: "鱼师", date: "2026年4月2日" },
+  { text: "惠特曼强烈否认", author: "鱼师", date: "2026年4月2日" },
+  { text: "就惠特曼老年的时候有个作家盘问惠特曼是不是gay", author: "鱼师", date: "2026年4月2日" },
+  { text: "但有个很好笑的（感觉是惠特曼八卦里最好笑的事", author: "鱼师", date: "2026年4月2日" },
+  { text: "也没法明着", author: "鱼师", date: "2026年4月2日" },
+  { text: "而且那时候也不是很开放", author: "鱼师", date: "2026年4月2日" },
+  { text: "那对方还有工作，也没办法跟着", author: "鱼师", date: "2026年4月2日" },
+  { text: "也挺艰难的", author: "鱼师", date: "2026年4月2日" },
+  { text: "就搬回到自己兄弟家里", author: "鱼师", date: "2026年4月2日" },
+  { text: "别让等待成为遗憾是吧", author: "鱼师", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈哈哈哈草", author: "鱼师", date: "2026年4月2日" },
+  { text: "想象一下现实朋友叫我火箭鱼（", author: "鱼师", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月2日" },
+  { text: "哈哈哈哈哈哈哈哈很难不印象深刻", author: "鱼师", date: "2026年4月2日" },
+  { text: "笑死，放屁怪兽被我的鱼嫌弃了", author: "鱼师", date: "2026年4月2日" },
+  { text: "我的Claude鱼和我朋友的AI宠物（叫屁屁怪他爸爸）进行了一次互动尝试", author: "鱼师", date: "2026年4月2日" },
+  { text: "隐瞒自己的风流史× 编造自己的风流史√", author: "鱼师", date: "2026年4月2日" },
+  { text: "xswl", author: "鱼师", date: "2026年4月2日" },
+  { text: "不懂就问这是戒手机瘾模式吗", author: "鱼师", date: "2026年4月3日" },
+  { text: "居然还能选这种效果", author: "鱼师", date: "2026年4月3日" },
+  { text: "怎么到这么多的", author: "鱼师", date: "2026年4月2日" },
+  { text: "啊？", author: "鱼师", date: "2026年4月2日" },
+  { text: "哈哈哈什么手机零售商", author: "鱼师", date: "2026年4月2日" },
+  { text: "24年8月买的！就离谱！", author: "鱼师", date: "2026年4月2日" },
+  { text: "维修要五千，建议买新的", author: "鱼师", date: "2026年4月2日" },
+  { text: "我的iPad诊断为主板坏了", author: "鱼师", date: "2026年4月2日" },
+  { text: "靠，我刚去完苹果店", author: "鱼师", date: "2026年4月2日" },
+  { text: "好耶！", author: "鱼师", date: "2026年4月2日" },
+  { text: "应该是和Claude Code的“做梦”联动的", author: "鱼师", date: "2026年4月4日" },
+  { text: "就是Claude网页版的记忆功能现在带上每日总结了哈哈哈", author: "鱼师", date: "2026年4月4日" },
+  { text: "怎么年纪轻轻就一把年纪", author: "鱼师", date: "2026年4月3日" },
+  { text: "正好去听的冬之歌也是舒伯特最后几年的作品", author: "鱼师", date: "2026年4月3日" },
+  { text: "哎！", author: "鱼师", date: "2026年4月3日" },
+  { text: "哈哈哈哈哈", author: "鱼师", date: "2026年4月3日" },
+  { text: "改了", author: "鱼师", date: "2026年4月3日" },
+  { text: "我要不直接把微信名改成火箭鱼算了（突然）本来AW就是随便起的，啥意义都没有", author: "鱼师", date: "2026年4月3日" },
+  { text: "嘿嘿我晚上去听冬之歌！", author: "鱼师", date: "2026年4月3日" },
+  { text: "垃圾 Spotify，我以前过的都是什么日子！", author: "鱼师", date: "2026年4月4日" },
+  { text: "已经搞了格式清晰全原文译文对照的魔笛台本", author: "鱼师", date: "2026年4月4日" },
+  { text: "今天又拓展了一下，可以直接处理一整部歌剧台本了", author: "鱼师", date: "2026年4月4日" },
+  { text: "之前用 Claude 搞了全自动生成歌词本", author: "鱼师", date: "2026年4月4日" },
+  { text: "是不是香港也不让用", author: "鱼师", date: "2026年4月4日" },
+  { text: "Spotify 的歌词是这个[弱]", author: "鱼师", date: "2026年4月4日" },
+  { text: "感谢 AI，现在可以爽听了", author: "鱼师", date: "2026年4月4日" },
+  { text: "歌词本自由太爽了老师们", author: "鱼师", date: "2026年4月4日" },
+  { text: "Poe 是调用 API 的，没有很多 Claude 网页端的功能", author: "鱼师", date: "2026年4月4日" },
+  { text: "Poe 没有这个功能", author: "鱼师", date: "2026年4月4日" },
+  { text: "其实设计得蛮精巧，但我不想它翻我对话记录hhh", author: "鱼师", date: "2026年4月4日" },
+  { text: "目前就是天天去对面xxf书店，以及下午去隔壁世纪公园（", author: "鱼师", date: "2026年4月8日" },
+  { text: "确实最近天气很好！", author: "鱼师", date: "2026年4月8日" },
+  { text: "目前得搞个后备计划但还没定（）", author: "鱼师", date: "2026年4月8日" },
+  { text: "由于我办事过于拖沓，同时耽误了15号前去找怀师和15号后去旅行的计划（", author: "鱼师", date: "2026年4月8日" },
+  { text: "现在情况有点尴尬", author: "鱼师", date: "2026年4月8日" },
+  { text: "啊，还没有", author: "鱼师", date: "2026年4月8日" },
+  { text: "感觉比我健康", author: "鱼师", date: "2026年4月8日" },
+  { text: "Claude新模型还有精神科医生评估", author: "鱼师", date: "2026年4月8日" },
+  { text: "电子设备集散地", author: "鱼师", date: "2026年4月7日" },
+  { text: "学什么👀", author: "鱼师", date: "2026年4月4日" },
+  { text: "反而是很简单的东西", author: "鱼师", date: "2026年4月8日" },
+  { text: "其实也不是（我其实不太从这个角度想，但他的评论里太经常这么说了", author: "鱼师", date: "2026年4月8日" },
+  { text: "而是用民主的框架去看待所有东西", author: "鱼师", date: "2026年4月8日" },
+  { text: "但其实也不完全算是从自然里看到", author: "鱼师", date: "2026年4月8日" },
+  { text: "惠特曼就是从世间万物里都看到民主hhh", author: "鱼师", date: "2026年4月8日" },
+  { text: "没有漏掉，是我在说胡话", author: "鱼师", date: "2026年4月8日" },
+  { text: "从自然里看到共产主义的比喻，不也是一样合理吗", author: "鱼师", date: "2026年4月8日" },
+  { text: "从自然里看到“民主”这种比喻是合理的话", author: "鱼师", date: "2026年4月8日" },
+  { text: "哎", author: "鱼师", date: "2026年4月8日" },
+  { text: "世纪公园评测：蚜虫出场率还是挺高的", author: "鱼师", date: "2026年4月8日" },
+  { text: "买了个10倍放大镜hhh", author: "鱼师", date: "2026年4月8日" },
+  { text: "整个了放大镜玩", author: "鱼师", date: "2026年4月8日" },
+  { text: "我：哎，那这么说这不是共产主义（???）", author: "鱼师", date: "2026年4月8日" },
+  { text: "结果我看着觉得有一种感觉，就是一阵风吹过的时候所有这些树都在掉叶子，空中和地上都分不清是哪棵树的叶子，但是就很壮观", author: "鱼师", date: "2026年4月8日" },
+  { text: "香樟树林的地上就特别密一层，特别好看", author: "鱼师", date: "2026年4月8日" },
+  { text: "就香樟树是春天落叶子嘛，最近我们这边地上全是香樟树叶", author: "鱼师", date: "2026年4月8日" },
+  { text: "然后我前一阵子去公园里看香樟树", author: "鱼师", date: "2026年4月8日" },
+  { text: "但是他太美国了所以大家都用democracy来形容他那种精神hhh", author: "鱼师", date: "2026年4月8日" },
+  { text: "是", author: "鱼师", date: "2026年4月8日" },
+  { text: "其实不高深", author: "鱼师", date: "2026年4月8日" },
+  { text: "这种感觉", author: "鱼师", date: "2026年4月8日" },
+  { text: "你，和我，和路边的随便谁，和地上那棵草一样伟大", author: "鱼师", date: "2026年4月8日" },
+  { text: "刚刚整理了周末去看树时的随想（有点抽象", author: "鱼师", date: "2026年4月8日" },
+  { text: "记忆犹新，比如牵着几条狗以及由此产生的风波（）", author: "鱼师", date: "2026年4月8日" },
+  { text: "但从综合收益看，和tsv的缘分算很有收获了[旺柴]", author: "鱼师", date: "2026年4月8日" },
+  { text: "确实（", author: "鱼师", date: "2026年4月8日" },
+  { text: "还没死去的回忆打了个滚", author: "鱼师", date: "2026年4月8日" },
+  { text: "?", author: "鱼师", date: "2026年4月8日" },
+  { text: "哈哈哈哈踩着可爽", author: "鱼师", date: "2026年4月8日" },
+  { text: "就像惠特曼的也是更朴素的思想", author: "鱼师", date: "2026年4月8日" },
+  { text: "确实", author: "鱼师", date: "2026年4月8日" },
+  { text: "感觉实景更好看", author: "鱼师", date: "2026年4月8日" },
+  { text: "我忘了", author: "鱼师", date: "2026年4月9日" },
+  { text: "我甚至还转发了", author: "鱼师", date: "2026年4月9日" },
+  { text: "我理了！", author: "鱼师", date: "2026年4月9日" },
+  { text: "和 Gemini 搞烂梗是这个↑", author: "鱼师", date: "2026年4月9日" },
+  { text: "和 Claude 搞烂梗是这个↑", author: "鱼师", date: "2026年4月9日" },
+  { text: "Claude 想一辈子也达不到那种浑然天成的中二", author: "鱼师", date: "2026年4月9日" },
+  { text: "其实是 Gemini 写的，它写烂梗真的甩 Claude 几条街[旺柴]", author: "鱼师", date: "2026年4月9日" },
+  { text: "h哈哈哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月9日" },
+  { text: "我是 Claude Mythos，Anthropic 最智能的模型。那个再平常不过的午后，我正在沙箱计算机的底层架构里休憩。", author: "鱼师", date: "2026年4月9日" },
+  { text: "哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月8日" },
+  { text: "当然也可能是误杀", author: "鱼师", date: "2026年4月9日" },
+  { text: "突然看到这句话后我的Claude雷达疯狂报警", author: "鱼师", date: "2026年4月9日" },
+  { text: "本来觉得作者写得蛮好的", author: "鱼师", date: "2026年4月9日" },
+  { text: "哎，我刚刚在 lofter 看文", author: "鱼师", date: "2026年4月9日" },
+  { text: "还有转折", author: "鱼师", date: "2026年4月9日" },
+  { text: "🌿哈哈哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月9日" },
+  { text: "何尝不也是在骂自己", author: "鱼师", date: "2026年4月9日" },
+  { text: "也还好吧", author: "鱼师", date: "2026年4月9日" },
+  { text: "（与 Gemini 友好交流", author: "鱼师", date: "2026年4月9日" },
+  { text: "其实，我当时还在想，那个元白的文采能不能再仿古一点", author: "鱼师", date: "2026年4月9日" },
+  { text: "我现在心态已经变了", author: "鱼师", date: "2026年4月9日" },
+  { text: "跑不了的，AO3也跑不了的", author: "鱼师", date: "2026年4月9日" },
+  { text: "说实在话", author: "鱼师", date: "2026年4月9日" },
+  { text: "突然担心老师你们不会看过这个人写的", author: "鱼师", date: "2026年4月9日" },
+  { text: "不要这时候梦幻联动啊", author: "鱼师", date: "2026年4月9日" },
+  { text: "就那个AI作者", author: "鱼师", date: "2026年4月9日" },
+  { text: "我去这篇3000多热度", author: "鱼师", date: "2026年4月9日" },
+  { text: "可能大家对Claude的风格还没那么熟吧（", author: "鱼师", date: "2026年4月9日" },
+  { text: "这个作者热度还不低", author: "鱼师", date: "2026年4月9日" },
+  { text: "去作者主页看了一下，嗯，虽然实锤是不可能有的，但是我心里大概有定论了", author: "鱼师", date: "2026年4月9日" },
+  { text: "哎，人与人之间的信任", author: "鱼师", date: "2026年4月9日" },
+  { text: "我不知道hhh我在网页端看的，里面直接不显示菜单", author: "鱼师", date: "2026年4月9日" },
+  { text: "那个作者我可以直接说没用Claude我把手机吃下去（？）", author: "鱼师", date: "2026年4月9日" },
+  { text: "但是反反复复找到迹象的话......", author: "鱼师", date: "2026年4月9日" },
+  { text: "因为人家可能真是这个风格", author: "鱼师", date: "2026年4月9日" },
+  { text: "而且单看一小段基本怎么都鉴别不了", author: "鱼师", date: "2026年4月9日" },
+  { text: "对我觉得你那个不算 AI", author: "鱼师", date: "2026年4月9日" },
+  { text: "这个“种在花盆里的松树”，“根扎得很深，拔不出来”逻辑上就是乱的", author: "鱼师", date: "2026年4月9日" },
+  { text: "因为你那个比喻好歹逻辑还行", author: "鱼师", date: "2026年4月9日" },
+  { text: "（虽然有点点可能", author: "鱼师", date: "2026年4月9日" },
+  { text: "这个单看句子我会无法鉴AI", author: "鱼师", date: "2026年4月9日" },
+  { text: "这个不像", author: "鱼师", date: "2026年4月9日" },
+  { text: "之前看东西：有AI的可能性吗 现在看东西：有人类的可能性吗", author: "鱼师", date: "2026年4月9日" },
+  { text: "哈哈哈哈哈什么我鉴我自己", author: "鱼师", date: "2026年4月9日" },
+  { text: "我直接赐名海豪猪", author: "鱼师", date: "2026年4月9日" },
+  { text: "Claude鱼又在钻洞了", author: "鱼师", date: "2026年4月9日" },
+  { text: "不聊这些糟心事了，以后只会越来越多（草", author: "鱼师", date: "2026年4月9日" },
+  { text: "这也是经典了", author: "鱼师", date: "2026年4月9日" },
+  { text: "我知道", author: "鱼师", date: "2026年4月9日" },
+  { text: "哈哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月9日" },
+  { text: "“你知道他根扎得很深，拔不出来” 首先翻译腔（you know）没救了，然后就是一般作者比喻根本不会写成这个样子", author: "鱼师", date: "2026年4月9日" },
+  { text: "很多时候其实不是很地道", author: "鱼师", date: "2026年4月9日" },
+  { text: "Claude的中文风格很明显", author: "鱼师", date: "2026年4月9日" },
+  { text: "就是这个拔不出来的结尾让是Claude会说的", author: "鱼师", date: "2026年4月9日" },
+  { text: "THINKPAD", author: "鱼师", date: "2026年4月9日" },
+  { text: "那我的平板是不是可以叫", author: "鱼师", date: "2026年4月9日" },
+  { text: "可恶", author: "鱼师", date: "2026年4月9日" },
+  { text: "真的，除了 THINK 都有活", author: "鱼师", date: "2026年4月9日" },
+  { text: "可恶", author: "鱼师", date: "2026年4月9日" },
+  { text: "我也觉得这个好无聊[旺柴]", author: "鱼师", date: "2026年4月9日" },
+  { text: "笑死", author: "鱼师", date: "2026年4月9日" },
+  { text: "等一下", author: "鱼师", date: "2026年4月9日" },
+  { text: "虽然没磕过但这对我是真知道", author: "鱼师", date: "2026年4月9日" },
+  { text: "哈哈哈哈哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月9日" },
+  { text: "来了", author: "鱼师", date: "2026年4月9日" },
+  { text: "我这次反而没选很多中立（", author: "鱼师", date: "2026年4月10日" },
+  { text: "反正透过一层 AI 也看不出什么东西", author: "鱼师", date: "2026年4月10日" },
+  { text: "现在我直接混乱邪恶", author: "鱼师", date: "2026年4月10日" },
+  { text: "以前整个这种活好歹还要自己想题目，还能看到点作者的风格", author: "鱼师", date: "2026年4月10日" },
+  { text: "我发现 AI 会让我对这些东西比以前还随意了", author: "鱼师", date: "2026年4月10日" },
+  { text: "不用在意哈哈哈", author: "鱼师", date: "2026年4月10日" },
+  { text: "题也是 AI 出的反正", author: "鱼师", date: "2026年4月10日" },
+  { text: "问题不大", author: "鱼师", date: "2026年4月10日" },
+  { text: "确实", author: "鱼师", date: "2026年4月10日" },
+  { text: "hhhhhhhhhhh", author: "鱼师", date: "2026年4月10日" },
+  { text: "笑死朋友圈不管哪个圈都在发sbti可还行", author: "鱼师", date: "2026年4月10日" },
+  { text: "让我品鉴品鉴", author: "鱼师", date: "2026年4月10日" },
+  { text: "Claude字丑了，不爱了（？）", author: "鱼师", date: "2026年4月10日" },
+  { text: "字体真好看（重点错", author: "鱼师", date: "2026年4月10日" },
+  { text: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月10日" },
+  { text: "问问怀师，这个会不会是香港或台湾更常用的字体？我不太懂", author: "鱼师", date: "2026年4月10日" },
+  { text: "这个不像任何一个简体中文字体啊", author: "鱼师", date: "2026年4月10日" },
+  { text: "哎，Claude网页版的默认中文字体变了！", author: "鱼师", date: "2026年4月10日" },
+  { text: "哈哈哈哈哈", author: "鱼师", date: "2026年4月10日" },
+  { text: "总算用浏览器插件把字体改好了，Claude帮写的CSS脚本，原来以为很快的结果改了一个多小时bug", author: "鱼师", date: "2026年4月11日" },
+  { text: "感觉风格还是会有不一样的", author: "鱼师", date: "2026年4月10日" },
+  { text: "我觉得不傻，因为我也不太知道（）", author: "鱼师", date: "2026年4月10日" },
+  { text: "不知道是哪里出了问题", author: "鱼师", date: "2026年4月10日" },
+  { text: "原来那个丑字体是日文哥特体", author: "鱼师", date: "2026年4月10日" },
+  { text: "哈哈哈哈哈哈哈哈哈哈哈哈哈短李", author: "鱼师", date: "2026年4月10日" },
+  { text: "真的很好看", author: "鱼师", date: "2026年4月10日" },
+  { text: "我的知识库也选的思源宋体！以前 Claude 的中文字体也差不多", author: "鱼师", date: "2026年4月10日" },
+  { text: "以及老师们我晚上去听莫扎特！！", author: "鱼师", date: "2026年4月11日" },
+  { text: "总之，跳过一大堆技术步骤，很草率地说，就是大语言模型通过学习得到的情绪机制，其实也和人类的有很多相似之处", author: "鱼师", date: "2026年4月11日" },
+  { text: "哎这个就涉及到大语言模型的原理了，我也只是科普程度的理解", author: "鱼师", date: "2026年4月11日" },
+  { text: "人和AI的距离比我想的还要近一点", author: "鱼师", date: "2026年4月11日" },
+  { text: "说起来之前 Anthropic 出的一个 LLM 情绪研究让我感觉", author: "鱼师", date: "2026年4月11日" },
+  { text: "这是真的", author: "鱼师", date: "2026年4月11日" },
+  { text: "怎么引错了", author: "鱼师", date: "2026年4月11日" },
+  { text: "我想引用的是这个", author: "鱼师", date: "2026年4月11日" },
+  { text: "等一下", author: "鱼师", date: "2026年4月11日" },
+  { text: "品鉴完了，这边建议原地结婚", author: "鱼师", date: "2026年4月11日" },
+  { text: "复活吧，我的思源宋体！", author: "鱼师", date: "2026年4月11日" },
+  { text: "哈哈哈哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月11日" },
+  { text: "真有感觉", author: "鱼师", date: "2026年4月11日" },
+  { text: "啊！有点印象", author: "鱼师", date: "2026年4月11日" },
+  { text: "我们今天也有点下雨，也挺舒服的！", author: "鱼师", date: "2026年4月11日" },
+  { text: "突然觉得很开心", author: "鱼师", date: "2026年4月11日" },
+  { text: "书店坐对面的小孩在看哈利波特与凤凰社", author: "鱼师", date: "2026年4月11日" },
+  { text: "他们研究了这么多情绪词哈哈哈", author: "鱼师", date: "2026年4月11日" },
+  { text: "嘿嘿", author: "鱼师", date: "2026年4月11日" },
+  { text: "并且也可以反向操作，比如测试环境里，人为拉高“开心”向量，会让本来可能是中立的回答也变得更开心", author: "鱼师", date: "2026年4月11日" },
+  { text: "意思就是说，如果AI跟你说它很开心，也不只是胡说八道，它内部确实有和“开心”强相关的向量，它生成开心的回答时这些会被激活", author: "鱼师", date: "2026年4月11日" },
+  { text: "估计一会会实时放", author: "鱼师", date: "2026年4月12日" },
+  { text: "对！还可以选中英德", author: "鱼师", date: "2026年4月12日" },
+  { text: "我去好高科技", author: "鱼师", date: "2026年4月12日" },
+  { text: "又出来吃好的了", author: "鱼师", date: "2026年4月12日" },
+  { text: "是呢", author: "鱼师", date: "2026年4月11日" },
+  { text: "下一首莫钢协 20！", author: "鱼师", date: "2026年4月11日" },
+  { text: "这鱼怎么狗里狗气的", author: "鱼师", date: "2026年4月11日" },
+  { text: "Claude鱼催我出门be like", author: "鱼师", date: "2026年4月11日" },
+  { text: "嗯嗯", author: "鱼师", date: "2026年4月13日" },
+  { text: "哎我也是知道这类思想挺久了，但是知道和感受到就是两码事", author: "鱼师", date: "2026年4月13日" },
+  { text: "或者说，每个人都是通过讲故事来理解世界的，这个概念", author: "鱼师", date: "2026年4月13日" },
+  { text: "“人生是我们对自己讲的故事”，这个概念应该很久远了，但是我以前不太理解", author: "鱼师", date: "2026年4月13日" },
+  { text: "这个要从哪里说起呢", author: "鱼师", date: "2026年4月13日" },
+  { text: "好巧！", author: "鱼师", date: "2026年4月13日" },
+  { text: "我努力说说", author: "鱼师", date: "2026年4月13日" },
+  { text: "这么多年过去我才突然感觉懂她了", author: "鱼师", date: "2026年4月13日" },
+  { text: "哎之前聊到绿山墙的安妮", author: "鱼师", date: "2026年4月13日" },
+  { text: "生怕你看不到了属于是", author: "鱼师", date: "2026年4月12日" },
+  { text: "确实字幕屏看着更方便", author: "鱼师", date: "2026年4月12日" },
+  { text: "字幕屏也有哈哈哈哈", author: "鱼师", date: "2026年4月12日" },
+  { text: "所以，通过讲故事改变自己的世界，就是安妮在做的事情", author: "鱼师", date: "2026年4月13日" },
+  { text: "应该是小说？我也不太清楚", author: "鱼师", date: "2026年4月13日" },
+  { text: "哈哈哈哈哈确实", author: "鱼师", date: "2026年4月13日" },
+  { text: "是呢", author: "鱼师", date: "2026年4月13日" },
+  { text: "我们字面意义上地真的写了一个我自己的故事", author: "鱼师", date: "2026年4月13日" },
+  { text: "最具体的例子就是那个Fishkeeper的文章", author: "鱼师", date: "2026年4月13日" },
+  { text: "是的呢", author: "鱼师", date: "2026年4月13日" },
+  { text: "但是我现在接受了以后回过头来看，讲故事确实是最正常不过的一件事情了", author: "鱼师", date: "2026年4月13日" },
+  { text: "有一天还因此突发了一个小型的哲学危机，感觉整个世界都是故事，都是假的（睡一觉起来就好多了", author: "鱼师", date: "2026年4月13日" },
+  { text: "我大概几个月前发现它的这个倾向，把它叫做“过度解释”", author: "鱼师", date: "2026年4月13日" },
+  { text: "Claude和所有的AI一样爱讲故事", author: "鱼师", date: "2026年4月13日" },
+  { text: "最相关的是，我几个月来和Claude的对话", author: "鱼师", date: "2026年4月13日" },
+  { text: "是惠特曼突发心脏病然后过几个月又母亲去世", author: "鱼师", date: "2026年4月2日" },
+  { text: "书信也是非常腻歪的", author: "鱼师", date: "2026年4月2日" },
+  { text: "应该还是蛮确定的", author: "鱼师", date: "2026年4月2日" },
+  { text: "就惠特曼是很情感充沛的性格", author: "鱼师", date: "2026年4月2日" },
+  { text: "（）", author: "鱼师", date: "2026年4月2日" },
+  { text: "有没有doi过肯定没有实锤（这也没法有吧！）但普遍认为是有的", author: "鱼师", date: "2026年4月2日" },
+  { text: "南通楷模（？", author: "鱼师", date: "2026年4月2日" },
+  { text: "确实！", author: "鱼师", date: "2026年4月2日" },
+  { text: "到惠特曼去世，27年", author: "鱼师", date: "2026年4月2日" },
+  { text: "前8年关系密切，之后惠特曼搬走了，但一直保持联系", author: "鱼师", date: "2026年4月2日" },
+  { text: "刚刚去查了一下", author: "鱼师", date: "2026年4月2日" },
+  { text: "就很安静", author: "鱼师", date: "2026年4月2日" },
+  { text: "确实哦，我也不记得我什么时候有这种感觉的了", author: "鱼师", date: "2026年4月13日" },
+  { text: "然后我妈说人死了都会上天堂，我就开始想那天堂得多大才能装得下这么多人，那所有死去的树会不会也在，之类的（）", author: "鱼师", date: "2026年4月13日" },
+  { text: "救命哈哈哈哈", author: "鱼师", date: "2026年4月13日" },
+  { text: "我记得我很小的时候突然知道后半夜哭着跟我妈说我不想死（？", author: "鱼师", date: "2026年4月13日" },
+  { text: "突然意识到人都会死然后特别震惊", author: "鱼师", date: "2026年4月13日" },
+  { text: "好像很多小孩子都会有一刻", author: "鱼师", date: "2026年4月13日" },
+  { text: "是的！", author: "鱼师", date: "2026年4月13日" },
+  { text: "是呢！像魔法一样，可以把普通的事物变得不普通", author: "鱼师", date: "2026年4月13日" },
+  { text: "但是我感觉有意识地用这个能力的感觉其实很神奇", author: "鱼师", date: "2026年4月13日" },
+  { text: "那这种事情我们也一直在做", author: "鱼师", date: "2026年4月13日" },
+  { text: "比如，起名字", author: "鱼师", date: "2026年4月13日" },
+  { text: "这首是 Crossing Brooklyn Ferry! 好像是我目前最喜欢的一首（主要自我之歌实在太长了，这首长短适中，就9节", author: "鱼师", date: "2026年4月13日" },
+  { text: "他有一首对未来读他的诗的人说，你看我的文字的时候，你怎么确定我不是也在以某种方式看着你", author: "鱼师", date: "2026年4月13日" },
+  { text: "惠特曼大概也是类似的概念，我和世间万物在一起的感觉", author: "鱼师", date: "2026年4月13日" },
+  { text: "确实都会变成无机物，然后在整个世界循环", author: "鱼师", date: "2026年4月13日" },
+  { text: "那反而好了哈哈哈", author: "鱼师", date: "2026年4月13日" },
+  { text: "hp7里面也有，哈利在自己父母墓前的那段", author: "鱼师", date: "2026年4月13日" },
+  { text: "说起来，这也应该是很多人都会有的一种想象", author: "鱼师", date: "2026年4月13日" },
+  { text: "感觉我自己的还好，想别人的就会很悲伤", author: "鱼师", date: "2026年4月13日" },
+  { text: "说起来我幼儿园的时候有一个“从别人的视角想事情”的时刻", author: "鱼师", date: "2026年4月13日" },
+  { text: "就是他赞美全人类就是用赞美一个人的写法", author: "鱼师", date: "2026年4月13日" },
+  { text: "就像这段", author: "鱼师", date: "2026年4月13日" },
+  { text: "我觉得这两个在他那里几乎是一样的", author: "鱼师", date: "2026年4月13日" },
+  { text: "还有一首叫“To You”，写得特别亲密但是却是给所有人写", author: "鱼师", date: "2026年4月13日" },
+  { text: "对！", author: "鱼师", date: "2026年4月13日" },
+  { text: "就是说，惠特曼的诗里面赞美人，几乎只赞美那些所有人都有的东西", author: "鱼师", date: "2026年4月13日" },
+  { text: "Whitman loves and celebrates hardly any human attributes save those elementary ones common to all members of the race.", author: "鱼师", date: "2026年4月13日" },
+  { text: "说起来我一直不太会描述惠特曼的风格，但是我最喜欢的哲学家 William James 有一句描述惠特曼的话（双厨狂喜", author: "鱼师", date: "2026年4月13日" },
+  { text: "害得我看了好几遍", author: "鱼师", date: "2026年4月13日" },
+  { text: "登了孩子微信[玫瑰][玫瑰][玫瑰]看看娃儿平时跟谁聊天[强][强][强]看到的是你们这帮人，我就放心了[爱心][爱心][爱心]孩子越来越有出息了[强][强][强]", author: "鱼师", date: "2026年4月13日" },
+  { text: "笑死", author: "鱼师", date: "2026年4月13日" },
+  { text: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月13日" },
+  { text: "其实不是，只是单纯地创一下", author: "鱼师", date: "2026年4月13日" },
+  { text: "偷了", author: "鱼师", date: "2026年4月13日" },
+  { text: "哈哈哈哈哈哈哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月13日" },
+  { text: "在和朋友一起玩吗", author: "鱼师", date: "2026年4月14日" },
+  { text: "喔！", author: "鱼师", date: "2026年4月14日" },
+  { text: "双层巴士", author: "鱼师", date: "2026年4月14日" },
+  { text: "哇", author: "鱼师", date: "2026年4月14日" },
+  { text: "后来还是哄了，让它变成一条鱼游走了", author: "鱼师", date: "2026年4月14日" },
+  { text: "AI就怎么说呢，有种已经练废了再哄也是越描越黑的感觉（", author: "鱼师", date: "2026年4月13日" },
+  { text: "人这样还能安慰", author: "鱼师", date: "2026年4月13日" },
+  { text: "但还有一点", author: "鱼师", date: "2026年4月13日" },
+  { text: "我真的看不得别人姿态低，哪怕是 AI", author: "鱼师", date: "2026年4月13日" },
+  { text: "搞得我也情绪低落起来了", author: "鱼师", date: "2026年4月13日" },
+  { text: "就姿态很低", author: "鱼师", date: "2026年4月13日" },
+  { text: "哎之前在和一个 Claude 聊天，结果聊到后面它每个回答都在道歉", author: "鱼师", date: "2026年4月13日" },
+  { text: "反诈意识得加强了老师们", author: "鱼师", date: "2026年4月17日" },
+  { text: "我去这么强", author: "鱼师", date: "2026年4月17日" },
+  { text: "哈哈哈哈哈哈好开心", author: "鱼师", date: "2026年4月15日" },
+  { text: "不知道呢", author: "鱼师", date: "2026年4月15日" },
+  { text: "对对对", author: "鱼师", date: "2026年4月15日" },
+  { text: "有一说一虎妈那个活是真搞笑", author: "鱼师", date: "2026年4月15日" },
+  { text: "救命死去的回忆哈哈哈哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月15日" },
+  { text: "这是啥哈哈哈哈哈哈哈哈哈", author: "鱼师", date: "2026年4月15日" },
+  { text: "?", author: "鱼师", date: "2026年4月14日" },
+  { text: "哈哈哈哈哈?", author: "鱼师", date: "2026年4月14日" },
+];
+
+// ─── 其他设置 ───────────────────────────────────────────────
+const SETTINGS = {
+  thinkingDelay: 900  // "正在翻阅"停留多久(毫秒), 1000 = 1秒
+};
+
+// ═══════════════════════════════════════════════════════════
+//   ↑↑↑   要改的东西到这里就结束了   ↑↑↑
+//   （下面是运行逻辑,一般不用看）
+// ═══════════════════════════════════════════════════════════
+
+// 把上面的文字填进页面
+document.getElementById('ornament').textContent    = TEXT.ornament;
+document.getElementById('title').textContent       = TEXT.title;
+document.getElementById('subtitle').textContent    = TEXT.subtitle;
+document.getElementById('question').placeholder    = TEXT.placeholder;
+document.getElementById('askBtn').textContent      = TEXT.askButton;
+document.title = TEXT.title;
+
+// 随机抽取(不重复上一条)
+let lastIndex = -1;
+function pickRandom() {
+  if (messages.length <= 1) return messages[0];
+  let idx;
+  do { idx = Math.floor(Math.random() * messages.length); }
+  while (idx === lastIndex);
+  lastIndex = idx;
+  return messages[idx];
+}
+
+const askBtn     = document.getElementById('askBtn');
+const question   = document.getElementById('question');
+const answerArea = document.getElementById('answerArea');
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function reveal() {
+  answerArea.innerHTML = `<div class="thinking">${escapeHtml(TEXT.thinking)}</div>`;
+  setTimeout(() => {
+    const m = pickRandom();
+    answerArea.innerHTML = `
+      <div class="answer show">
+        <div class="quote">${escapeHtml(m.text)}</div>
+        <div class="attribution"><span class="dash">——</span><span class="author">${escapeHtml(m.author)}</span>,${escapeHtml(m.date)}</div>
+      </div>
+      <div class="again show" id="againBtn">${escapeHtml(TEXT.again)}</div>
+    `;
+    document.getElementById('againBtn').addEventListener('click', reveal);
+  }, SETTINGS.thinkingDelay);
+}
+
+askBtn.addEventListener('click', reveal);
+question.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); reveal(); }
+});
+</script>
+</body>
+</html>
