@@ -366,19 +366,19 @@ body::after {
   padding: 0;
 }
 .music-toggle:hover {
-  opacity: 1;
+  opacity: 0.8;
   color: var(--gold);
   border-color: var(--gold);
 }
 .music-toggle.playing {
   color: var(--gold);
   border-color: var(--gold);
-  opacity: 1;
+  opacity: 0.75;
   animation: musicPulse 2.4s ease-in-out infinite;
 }
 .music-toggle.loading {
   color: var(--gold);
-  opacity: 1;
+  opacity: 0.75;
   cursor: wait;
 }
 .music-toggle.loading::before {
@@ -386,13 +386,13 @@ body::after {
   position: absolute;
   inset: -5px;
   border-radius: 50%;
-  border: 1.5px solid rgba(200, 169, 113, 0.18);
-  border-top-color: var(--gold);
+  border: 1.5px solid rgba(200, 169, 113, 0.08);
+  border-top-color: rgba(200, 169, 113, 0.55);
   animation: musicSpin 0.95s linear infinite;
 }
 @keyframes musicPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 169, 113, 0.35); }
-  50%      { box-shadow: 0 0 0 7px rgba(200, 169, 113, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 169, 113, 0.18); }
+  50%      { box-shadow: 0 0 0 6px rgba(200, 169, 113, 0); }
 }
 @keyframes musicSpin {
   from { transform: rotate(0deg); }
