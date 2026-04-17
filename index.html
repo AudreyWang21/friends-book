@@ -155,6 +155,11 @@ body::after {
 #question::placeholder {
   color: var(--ink-faint);
   opacity: 0.5;
+  transition: opacity 0.35s ease;
+}
+
+#question:focus::placeholder {
+  opacity: 0;
 }
 
 .ask-btn {
