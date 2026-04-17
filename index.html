@@ -2071,7 +2071,7 @@ function reveal() {
     answerArea.innerHTML = `
       <div class="answer show">
         <div class="quote">${escapeHtml(m.text)}</div>
-        <div class="attribution"><span class="dash">——</span><span class="author">${escapeHtml(m.author)}</span>,${escapeHtml(m.date)}</div>
+        <div class="attribution"><span class="dash">——</span><span class="author">${escapeHtml(m.author)}</span>，${escapeHtml(m.date)}</div>
       </div>
       <div class="actions show"><span class="again" id="againBtn">${escapeHtml(TEXT.again)}</span><span class="sep">·</span><span class="again" id="resetBtn">${escapeHtml(TEXT.reset)}</span></div>
     `;
@@ -2195,12 +2195,11 @@ musicToggle.addEventListener('click', async () => {
   wantPlay = !wantPlay;
 
   if (wantPlay) {
-    setVisualPlaying(true);
+    // 加载阶段: 只有音符呼吸, 曲目信息保持隐藏
     const ok = await ensureLoaded();
     // 加载期间用户又取消了
     if (!wantPlay) return;
     if (!ok) {
-      setVisualPlaying(false);
       wantPlay = false;
       return;
     }
@@ -2210,11 +2209,12 @@ musicToggle.addEventListener('click', async () => {
       try { await bgm.play(); }
       catch (err) {
         console.warn('播放失败, 请再点一次:', err);
-        setVisualPlaying(false);
         wantPlay = false;
         return;
       }
     }
+    // 音乐真正开始了 → 显示金色音符 + 曲目信息
+    setVisualPlaying(true);
     fadeVolume(TARGET_VOLUME, FADE_IN_MS);
   } else {
     // 淡出后暂停
