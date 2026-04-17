@@ -324,7 +324,7 @@ body::after {
   /* 小屏: 缩小标题字间距, 避免"西音磕考队之书"挤不下换行 */
   .title { letter-spacing: 0.18em; padding-left: 0.09em; }
   /* 音乐播放器: 手机上压缩一下 */
-  .music-player { bottom: 1rem; left: 1rem; gap: 0.55rem; }
+  .music-player { top: 1rem; left: 1rem; gap: 0.55rem; }
   .music-credit { font-size: 0.65rem; max-width: 180px; }
 }
 
@@ -337,16 +337,17 @@ body::after {
    音乐播放器 (左下角)
    ═══════════════════════════════════════════════════════════ */
 .music-player {
-  position: fixed;
-  bottom: 1.3rem;
+  position: absolute;
+  top: 1.3rem;
   left: 1.3rem;
-  z-index: 100;
+  z-index: 10;
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
 .music-toggle {
+  position: relative;
   width: 38px;
   height: 38px;
   border: 1px solid var(--ink-faint);
@@ -375,9 +376,27 @@ body::after {
   opacity: 1;
   animation: musicPulse 2.4s ease-in-out infinite;
 }
+.music-toggle.loading {
+  color: var(--gold);
+  opacity: 1;
+  cursor: wait;
+}
+.music-toggle.loading::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(200, 169, 113, 0.18);
+  border-top-color: var(--gold);
+  animation: musicSpin 0.95s linear infinite;
+}
 @keyframes musicPulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(200, 169, 113, 0.35); }
   50%      { box-shadow: 0 0 0 7px rgba(200, 169, 113, 0); }
+}
+@keyframes musicSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 .music-credit {
@@ -387,9 +406,18 @@ body::after {
   color: var(--ink-faint);
   letter-spacing: 0.04em;
   line-height: 1.45;
-  opacity: 0.55;
-  max-width: 260px;
+  max-width: 240px;
   user-select: none;
+  /* 默认隐藏, 首次点击音符按钮后淡入 */
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+  pointer-events: none;
+}
+.music-credit.revealed {
+  opacity: 0.55;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 .music-credit a {
   color: inherit;
@@ -421,7 +449,7 @@ body::after {
 </div>
 
 <!-- 背景音乐 -->
-<audio id="bgm" src="fantasia.mp3" loop preload="auto"></audio>
+<audio id="bgm" loop preload="none"></audio>
 <div class="music-player">
   <button class="music-toggle" id="musicToggle" aria-label="播放/暂停背景音乐" title="播放/暂停背景音乐">♪</button>
   <div class="music-credit">
@@ -2099,22 +2127,77 @@ const bgm = document.getElementById('bgm');
 const musicToggle = document.getElementById('musicToggle');
 bgm.volume = 0.5;  // 默认音量 50%
 
-musicToggle.addEventListener('click', () => {
-  if (bgm.paused) {
-    bgm.play().then(() => {
-      musicToggle.classList.add('playing');
-    }).catch(err => {
-      console.warn('音乐播放失败:', err);
+const MUSIC_URL = 'fantasia.mp3';
+let audioLoaded = false;
+let isLoading = false;
+let loadController = null;
+
+async function ensureLoaded() {
+  if (audioLoaded) return true;
+  isLoading = true;
+  musicToggle.classList.add('loading');
+  loadController = new AbortController();
+  try {
+    const response = await fetch(MUSIC_URL, { signal: loadController.signal });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const blob = await response.blob();
+    bgm.src = URL.createObjectURL(blob);
+    // 等音频元素把blob准备好,这样后续play()会立刻响应
+    await new Promise((resolve, reject) => {
+      const onLoaded = () => { cleanup(); resolve(); };
+      const onError  = (e) => { cleanup(); reject(e); };
+      const cleanup = () => {
+        bgm.removeEventListener('loadeddata', onLoaded);
+        bgm.removeEventListener('error', onError);
+      };
+      bgm.addEventListener('loadeddata', onLoaded);
+      bgm.addEventListener('error', onError);
+      bgm.load();
     });
-  } else {
+    audioLoaded = true;
+    return true;
+  } catch (err) {
+    if (err.name !== 'AbortError') console.warn('音乐加载失败:', err);
+    return false;
+  } finally {
+    isLoading = false;
+    musicToggle.classList.remove('loading');
+    loadController = null;
+  }
+}
+
+const musicCredit = document.querySelector('.music-credit');
+
+musicToggle.addEventListener('click', async () => {
+  // 加载中再点一次 → 取消加载
+  if (isLoading) {
+    if (loadController) loadController.abort();
+    musicCredit.classList.remove('revealed');
+    return;
+  }
+  // 正在播放 → 暂停
+  if (!bgm.paused) {
     bgm.pause();
-    musicToggle.classList.remove('playing');
+    return;
+  }
+  // 其他情况: 显示署名并开始加载+播放
+  musicCredit.classList.add('revealed');
+  const ok = await ensureLoaded();
+  if (ok) {
+    try { await bgm.play(); }
+    catch (err) { console.warn('播放失败, 请再点一次:', err); }
   }
 });
 
-// 音频如果因为某种原因暂停了 (浏览器策略等), 同步更新按钮状态
-bgm.addEventListener('pause', () => musicToggle.classList.remove('playing'));
-bgm.addEventListener('play',  () => musicToggle.classList.add('playing'));
+// 音频状态变化时同步按钮和署名(防止状态错位)
+bgm.addEventListener('play',  () => {
+  musicToggle.classList.add('playing');
+  musicCredit.classList.add('revealed');
+});
+bgm.addEventListener('pause', () => {
+  musicToggle.classList.remove('playing');
+  musicCredit.classList.remove('revealed');
+});
 </script>
 </body>
 </html>
