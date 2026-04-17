@@ -285,6 +285,16 @@ body::after {
   100% { opacity: 1; transform: translateY(0);    filter: blur(0); }
 }
 
+@keyframes closeBook {
+  0%   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+  100% { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+}
+
+.answer.closing,
+.actions.closing {
+  animation: closeBook 0.75s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 0.35; }
   50%      { opacity: 0.85; }
@@ -1961,6 +1971,7 @@ function escapeHtml(s) {
 }
 
 function reveal() {
+  if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
   answerArea.innerHTML = `<div class="thinking">${escapeHtml(TEXT.thinking)}</div>`;
   setTimeout(() => {
     const m = pickRandom();
@@ -1972,11 +1983,22 @@ function reveal() {
       <div class="actions show"><span class="again" id="againBtn">${escapeHtml(TEXT.again)}</span><span class="sep">·</span><span class="again" id="resetBtn">${escapeHtml(TEXT.reset)}</span></div>
     `;
     document.getElementById('againBtn').addEventListener('click', reveal);
-    document.getElementById('resetBtn').addEventListener('click', () => {
-      document.getElementById('answerArea').innerHTML = '';
-      document.getElementById('question').value = '';
-    });
+    document.getElementById('resetBtn').addEventListener('click', closeBook);
   }, SETTINGS.thinkingDelay);
+}
+
+let closeTimer = null;
+function closeBook() {
+  const answer = answerArea.querySelector('.answer');
+  const actions = answerArea.querySelector('.actions');
+  if (answer) answer.classList.add('closing');
+  if (actions) actions.classList.add('closing');
+  question.value = '';
+  if (closeTimer) clearTimeout(closeTimer);
+  closeTimer = setTimeout(() => {
+    answerArea.innerHTML = '';
+    closeTimer = null;
+  }, 750);
 }
 
 askBtn.addEventListener('click', reveal);
