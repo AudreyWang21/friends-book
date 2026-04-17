@@ -365,10 +365,12 @@ body::after {
   flex-shrink: 0;
   padding: 0;
 }
-.music-toggle:hover {
-  opacity: 0.8;
-  color: var(--gold);
-  border-color: var(--gold);
+@media (hover: hover) {
+  .music-toggle:hover {
+    opacity: 0.8;
+    color: var(--gold);
+    border-color: var(--gold);
+  }
 }
 .music-toggle.playing {
   color: var(--gold);
@@ -2125,12 +2127,43 @@ question.addEventListener('keydown', e => {
 // ─── 背景音乐控制 ───────────────────────────────────────────
 const bgm = document.getElementById('bgm');
 const musicToggle = document.getElementById('musicToggle');
-bgm.volume = 0.5;  // 默认音量 50%
+const musicCredit = document.querySelector('.music-credit');
 
 const MUSIC_URL = 'fantasia.mp3';
+const TARGET_VOLUME = 0.5;
+const FADE_IN_MS  = 900;
+const FADE_OUT_MS = 700;
+
+bgm.volume = 0;
+
 let audioLoaded = false;
 let isLoading = false;
 let loadController = null;
+let wantPlay = false;
+let currentFade = null;
+
+// 音量渐变(可被新的fade打断)
+function fadeVolume(to, duration) {
+  if (currentFade) currentFade.cancelled = true;
+  const fade = { cancelled: false };
+  currentFade = fade;
+  const from = bgm.volume;
+  const delta = to - from;
+  const start = performance.now();
+  return new Promise(resolve => {
+    function step(now) {
+      if (fade.cancelled) { resolve(false); return; }
+      const p = Math.min((now - start) / duration, 1);
+      bgm.volume = Math.max(0, Math.min(1, from + delta * p));
+      if (p < 1) requestAnimationFrame(step);
+      else {
+        if (currentFade === fade) currentFade = null;
+        resolve(true);
+      }
+    }
+    requestAnimationFrame(step);
+  });
+}
 
 async function ensureLoaded() {
   if (audioLoaded) return true;
@@ -2142,16 +2175,19 @@ async function ensureLoaded() {
     if (!response.ok) throw new Error('HTTP ' + response.status);
     const blob = await response.blob();
     bgm.src = URL.createObjectURL(blob);
-    // 等音频元素把blob准备好,这样后续play()会立刻响应
+    // 等音频元素把blob准备好 —— 同时响应abort,不让abort卡在这一步
     await new Promise((resolve, reject) => {
-      const onLoaded = () => { cleanup(); resolve(); };
-      const onError  = (e) => { cleanup(); reject(e); };
       const cleanup = () => {
         bgm.removeEventListener('loadeddata', onLoaded);
         bgm.removeEventListener('error', onError);
+        loadController.signal.removeEventListener('abort', onAbort);
       };
+      const onLoaded = () => { cleanup(); resolve(); };
+      const onError  = (e) => { cleanup(); reject(e); };
+      const onAbort  = () => { cleanup(); reject(new DOMException('Aborted', 'AbortError')); };
       bgm.addEventListener('loadeddata', onLoaded);
       bgm.addEventListener('error', onError);
+      loadController.signal.addEventListener('abort', onAbort);
       bgm.load();
     });
     audioLoaded = true;
@@ -2166,37 +2202,51 @@ async function ensureLoaded() {
   }
 }
 
-const musicCredit = document.querySelector('.music-credit');
+// 视觉状态完全由 wantPlay 控制, 避免与异步状态打架
+function setVisualPlaying(on) {
+  musicToggle.classList.toggle('playing', on);
+  musicCredit.classList.toggle('revealed', on);
+}
 
 musicToggle.addEventListener('click', async () => {
-  // 加载中再点一次 → 取消加载
+  // 加载中再点一次 → 彻底取消
   if (isLoading) {
+    wantPlay = false;
+    setVisualPlaying(false);
     if (loadController) loadController.abort();
-    musicCredit.classList.remove('revealed');
     return;
   }
-  // 正在播放 → 暂停
-  if (!bgm.paused) {
-    bgm.pause();
-    return;
-  }
-  // 其他情况: 显示署名并开始加载+播放
-  musicCredit.classList.add('revealed');
-  const ok = await ensureLoaded();
-  if (ok) {
-    try { await bgm.play(); }
-    catch (err) { console.warn('播放失败, 请再点一次:', err); }
-  }
-});
 
-// 音频状态变化时同步按钮和署名(防止状态错位)
-bgm.addEventListener('play',  () => {
-  musicToggle.classList.add('playing');
-  musicCredit.classList.add('revealed');
-});
-bgm.addEventListener('pause', () => {
-  musicToggle.classList.remove('playing');
-  musicCredit.classList.remove('revealed');
+  wantPlay = !wantPlay;
+
+  if (wantPlay) {
+    setVisualPlaying(true);
+    const ok = await ensureLoaded();
+    // 加载期间用户又取消了
+    if (!wantPlay) return;
+    if (!ok) {
+      setVisualPlaying(false);
+      wantPlay = false;
+      return;
+    }
+    // 开始播放 + 淡入
+    if (bgm.paused) {
+      bgm.volume = 0;
+      try { await bgm.play(); }
+      catch (err) {
+        console.warn('播放失败, 请再点一次:', err);
+        setVisualPlaying(false);
+        wantPlay = false;
+        return;
+      }
+    }
+    fadeVolume(TARGET_VOLUME, FADE_IN_MS);
+  } else {
+    // 淡出后暂停
+    setVisualPlaying(false);
+    const completed = await fadeVolume(0, FADE_OUT_MS);
+    if (completed && !wantPlay) bgm.pause();
+  }
 });
 </script>
 </body>
