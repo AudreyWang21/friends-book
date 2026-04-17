@@ -323,11 +323,83 @@ body::after {
   .ask-btn:hover { letter-spacing: 0.4em; padding-left: 2.4rem; padding-right: 1.9rem; }
   /* 小屏: 缩小标题字间距, 避免"西音磕考队之书"挤不下换行 */
   .title { letter-spacing: 0.18em; padding-left: 0.09em; }
+  /* 音乐播放器: 手机上压缩一下 */
+  .music-player { bottom: 1rem; left: 1rem; gap: 0.55rem; }
+  .music-credit { font-size: 0.65rem; max-width: 180px; }
 }
 
 /* 极窄屏(iPhone SE/mini或开了"较大文本"): 再保险一档 */
 @media (max-width: 400px) {
   .title { font-size: clamp(1.55rem, 6vw, 1.9rem); letter-spacing: 0.13em; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   音乐播放器 (左下角)
+   ═══════════════════════════════════════════════════════════ */
+.music-player {
+  position: fixed;
+  bottom: 1.3rem;
+  left: 1.3rem;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.music-toggle {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--ink-faint);
+  background: transparent;
+  color: var(--ink-faint);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: all 0.35s ease;
+  opacity: 0.5;
+  flex-shrink: 0;
+  padding: 0;
+}
+.music-toggle:hover {
+  opacity: 1;
+  color: var(--gold);
+  border-color: var(--gold);
+}
+.music-toggle.playing {
+  color: var(--gold);
+  border-color: var(--gold);
+  opacity: 1;
+  animation: musicPulse 2.4s ease-in-out infinite;
+}
+@keyframes musicPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 169, 113, 0.35); }
+  50%      { box-shadow: 0 0 0 7px rgba(200, 169, 113, 0); }
+}
+
+.music-credit {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+  line-height: 1.45;
+  opacity: 0.55;
+  max-width: 260px;
+  user-select: none;
+}
+.music-credit a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(122, 106, 82, 0.35);
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+.music-credit a:hover {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
 }
 </style>
 </head>
@@ -346,6 +418,16 @@ body::after {
   </div>
 
   <div class="answer-area" id="answerArea"></div>
+</div>
+
+<!-- 背景音乐 -->
+<audio id="bgm" src="fantasia.mp3" loop preload="auto"></audio>
+<div class="music-player">
+  <button class="music-toggle" id="musicToggle" aria-label="播放/暂停背景音乐" title="播放/暂停背景音乐">♪</button>
+  <div class="music-credit">
+    Mozart · Fantasia in D minor, K.397<br>
+    perf. German Kitkin · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>
+  </div>
 </div>
 
 <script>
@@ -2011,6 +2093,28 @@ askBtn.addEventListener('click', reveal);
 question.addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); reveal(); }
 });
+
+// ─── 背景音乐控制 ───────────────────────────────────────────
+const bgm = document.getElementById('bgm');
+const musicToggle = document.getElementById('musicToggle');
+bgm.volume = 0.5;  // 默认音量 50%
+
+musicToggle.addEventListener('click', () => {
+  if (bgm.paused) {
+    bgm.play().then(() => {
+      musicToggle.classList.add('playing');
+    }).catch(err => {
+      console.warn('音乐播放失败:', err);
+    });
+  } else {
+    bgm.pause();
+    musicToggle.classList.remove('playing');
+  }
+});
+
+// 音频如果因为某种原因暂停了 (浏览器策略等), 同步更新按钮状态
+bgm.addEventListener('pause', () => musicToggle.classList.remove('playing'));
+bgm.addEventListener('play',  () => musicToggle.classList.add('playing'));
 </script>
 </body>
 </html>
