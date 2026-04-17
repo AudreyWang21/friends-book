@@ -171,13 +171,11 @@ body::after {
   transition: all 0.45s ease;
 }
 
-@media (hover: hover) {
-  .ask-btn:hover {
-    background: var(--gold-glow);
-    letter-spacing: 0.55em;
-    padding-left: 3.05rem;
-    padding-right: 2.65rem;
-  }
+.ask-btn:hover {
+  background: var(--gold-glow);
+  letter-spacing: 0.55em;
+  padding-left: 3.05rem;
+  padding-right: 2.65rem;
 }
 
 .ask-btn:active {
@@ -322,16 +320,12 @@ body::after {
   .header { margin-bottom: 2.5rem; }
   .answer-area { margin-top: 2.5rem; }
   .ask-btn { letter-spacing: 0.3em; padding: 0.75rem 2rem 0.75rem 2.3rem; }
+  .ask-btn:hover { letter-spacing: 0.4em; padding-left: 2.4rem; padding-right: 1.9rem; }
   /* 小屏: 缩小标题字间距, 避免"西音磕考队之书"挤不下换行 */
   .title { letter-spacing: 0.18em; padding-left: 0.09em; }
   /* 音乐播放器: 手机上压缩一下 */
   .music-player { top: 1rem; left: 1rem; gap: 0.55rem; }
   .music-credit { font-size: 0.65rem; max-width: 180px; }
-}
-
-/* 窄桌面窗口(被缩小的电脑窗口)时, hover 效果也要跟着缩一点 */
-@media (hover: hover) and (max-width: 600px) {
-  .ask-btn:hover { letter-spacing: 0.4em; padding-left: 2.4rem; padding-right: 1.9rem; }
 }
 
 /* 极窄屏(iPhone SE/mini或开了"较大文本"): 再保险一档 */
@@ -2218,6 +2212,7 @@ musicToggle.addEventListener('click', async () => {
   // 加载中再点一次 → 彻底取消
   if (isLoading) {
     wantPlay = false;
+    setVisualPlaying(false);
     if (loadController) loadController.abort();
     return;
   }
@@ -2225,21 +2220,26 @@ musicToggle.addEventListener('click', async () => {
   wantPlay = !wantPlay;
 
   if (wantPlay) {
-    // 加载阶段先不显示署名和脉动, 只有转圈的加载指示
+    setVisualPlaying(true);
     const ok = await ensureLoaded();
-    if (!wantPlay) return;  // 加载期间用户取消了
-    if (!ok) { wantPlay = false; return; }
+    // 加载期间用户又取消了
+    if (!wantPlay) return;
+    if (!ok) {
+      setVisualPlaying(false);
+      wantPlay = false;
+      return;
+    }
+    // 开始播放 + 淡入
     if (bgm.paused) {
       bgm.volume = 0;
       try { await bgm.play(); }
       catch (err) {
         console.warn('播放失败, 请再点一次:', err);
+        setVisualPlaying(false);
         wantPlay = false;
         return;
       }
     }
-    // 音乐真正开始了 → 显示署名和脉动
-    setVisualPlaying(true);
     fadeVolume(TARGET_VOLUME, FADE_IN_MS);
   } else {
     // 淡出后暂停
