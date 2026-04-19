@@ -71,6 +71,7 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
 .actions .sep{color:var(--ink-faint);opacity:.5}
 .again:hover{color:var(--gold);border-bottom-color:var(--gold)}
 .thinking{font-family:"Cormorant Garamond",serif;font-style:italic;color:var(--ink-faint);letter-spacing:.2em;font-size:.95rem;opacity:0;animation:thinkFadeIn .5s ease-out .35s forwards, pulse 1.8s ease-in-out 1.35s infinite}
+.thinking.instant{animation:thinkFadeIn .35s ease-out forwards, pulse 1.8s ease-in-out 1s infinite}
 @keyframes thinkFadeIn{to{opacity:.6}}
 
 /* fade-out on close (also for qecho) */
@@ -227,8 +228,10 @@ function reveal(){
   // capture question text on ask (only the first time; again preserves it)
   if (question.value.trim()) lastQuestion = question.value.trim();
 
+  const askBtnVisible = !askBtn.classList.contains('hidden');
   hideAskUI();
-  answerArea.innerHTML = `<div class="thinking">${escapeHtml(TEXT.thinking)}</div>`;
+  const thinkClass = askBtnVisible ? 'thinking' : 'thinking instant';
+  answerArea.innerHTML = `<div class="${thinkClass}">${escapeHtml(TEXT.thinking)}</div>`;
   revealTimer = setTimeout(() => {
     revealTimer = null;
     const m = pickRandom();
