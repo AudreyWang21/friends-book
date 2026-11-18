@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>西音磕考队之书</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%93%96</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Serif+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -55,10 +56,6 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
 /* answer */
 .answer-area{margin-top:-3.2rem;min-height:140px;width:100%;text-align:center;pointer-events:none}
 .answer-area:not(:empty){pointer-events:auto}
-.qecho{font-family:"Noto Serif SC",serif;font-size:1.05rem;letter-spacing:.05em;color:var(--ink-soft);margin-bottom:2rem;line-height:1.6;opacity:0;padding-bottom:1.2rem;border-bottom:1px solid rgba(122,106,82,.3);max-width:85%;margin-left:auto;margin-right:auto}
-.qecho.show{animation:qechoIn 1s .05s ease-out forwards}
-.qecho::before{content:'「'}
-.qecho::after{content:'」'}
 .answer{opacity:0}
 .answer.show{animation:revealAnswer var(--dur-reveal) ease-out forwards}
 .quote{font-size:clamp(1.5rem,3.6vw,1.95rem);line-height:1.8;color:var(--ink);font-weight:400;margin-bottom:1.4rem;letter-spacing:.05em}
@@ -74,11 +71,10 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
 .thinking.instant{animation:thinkFadeIn .35s ease-out forwards, pulse 1.8s ease-in-out 1s infinite}
 @keyframes thinkFadeIn{to{opacity:.6}}
 
-/* fade-out on close (also for qecho) */
-.answer.closing, .actions.closing, .qecho.closing{animation:closeBook var(--dur-close) ease-out forwards}
+/* fade-out on close */
+.answer.closing, .actions.closing{animation:closeBook var(--dur-close) ease-out forwards}
 
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes qechoIn{from{opacity:0;transform:translateY(8px);filter:blur(4px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
 @keyframes revealAnswer{0%{opacity:0}100%{opacity:1}}
 @keyframes closeBook{0%{opacity:1}100%{opacity:0}}
 @keyframes pulse{0%,100%{opacity:.6}50%{opacity:.9}}
@@ -107,17 +103,8 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
 .music-credit.revealed{opacity:.55;transform:translateY(0);pointer-events:auto}
 .music-credit a{color:inherit;text-decoration:none;border-bottom:1px solid rgba(122,106,82,.35);transition:color .3s, border-color .3s}
 .music-credit a:hover{color:var(--gold);border-bottom-color:var(--gold)}
+.music-error{font-size:.72rem;color:var(--ink-faint);letter-spacing:.08em;opacity:.7;position:absolute;left:calc(38px + .75rem);white-space:nowrap}
 
-/* Tweaks panel */
-.tweaks-panel{position:fixed;bottom:1.25rem;right:1.25rem;z-index:100;background:rgba(20,16,12,.94);border:1px solid rgba(200,169,113,.35);padding:1rem 1.1rem .85rem;font-family:"Cormorant Garamond",serif;color:var(--ink-soft);box-shadow:0 8px 32px rgba(0,0,0,.5);backdrop-filter:blur(8px);max-width:280px;display:none}
-.tweaks-panel.open{display:block}
-.tweaks-panel h3{font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem;font-weight:500;font-style:italic}
-.tweak-row{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:.45rem;font-size:.82rem}
-.tweak-row label{color:var(--ink-soft);flex:0 0 auto;font-style:italic}
-.tweak-row input[type=range]{flex:1;min-width:0;accent-color:var(--gold);height:2px}
-.tweak-row .val{color:var(--gold);font-size:.72rem;font-family:"Cormorant Garamond",serif;min-width:48px;text-align:right;letter-spacing:.02em}
-.tweak-reset{margin-top:.5rem;background:transparent;border:1px solid rgba(200,169,113,.4);color:var(--gold);font-family:"Cormorant Garamond",serif;font-style:italic;font-size:.78rem;letter-spacing:.15em;padding:.35rem .9rem;cursor:pointer;width:100%;transition:background .3s ease}
-.tweak-reset:hover{background:var(--gold-glow)}
 </style>
 </head>
 <body>
@@ -139,27 +126,17 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
 
 <audio id="bgm" loop preload="none"></audio>
 
-<div class="tweaks-panel" id="tweaksPanel">
-  <h3>Tweaks — 动画时长</h3>
-  <div class="tweak-row"><label>标题淡入</label><input type="range" data-key="headerMs" min="0" max="3000" step="50"><span class="val"></span></div>
-  <div class="tweak-row"><label>输入淡入</label><input type="range" data-key="questionMs" min="0" max="3000" step="50"><span class="val"></span></div>
-  <div class="tweak-row"><label>翻阅停顿</label><input type="range" data-key="thinkingMs" min="0" max="4000" step="50"><span class="val"></span></div>
-  <div class="tweak-row"><label>答案浮现</label><input type="range" data-key="revealMs" min="0" max="3000" step="50"><span class="val"></span></div>
-  <div class="tweak-row"><label>按钮淡入</label><input type="range" data-key="actionsMs" min="0" max="3000" step="50"><span class="val"></span></div>
-  <div class="tweak-row"><label>按钮延迟</label><input type="range" data-key="actionsDelayMs" min="0" max="3000" step="50"><span class="val"></span></div>
-  <div class="tweak-row"><label>合上书</label><input type="range" data-key="closeMs" min="0" max="2000" step="25"><span class="val"></span></div>
-  <div class="tweak-row"><label>求答悬停</label><input type="range" data-key="askHoverMs" min="0" max="1500" step="25"><span class="val"></span></div>
-  <button class="tweak-reset" id="tweakReset">恢复默认</button>
-</div><div class="music-player">
+<div class="music-player">
   <button class="music-toggle" id="musicToggle" aria-label="播放/暂停背景音乐" title="播放/暂停背景音乐">♪</button>
   <div class="music-credit">
     Mozart · Fantasia in D minor, K.397<br>
     perf. German Kitkin · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>
   </div>
+  <div class="music-error" id="musicError" hidden>音乐不见了……</div>
 </div>
 
 <script>
-const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+const TIMING = {
   "headerMs": 1200,
   "questionMs": 1200,
   "thinkingMs": 1050,
@@ -168,9 +145,9 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "closeMs": 250,
   "askHoverMs": 450,
   "actionsDelayMs": 250
-}/*EDITMODE-END*/;
+};
 
-function applyTweaks(t){
+function applyTiming(t){
   const root = document.documentElement;
   root.style.setProperty('--dur-header', t.headerMs + 'ms');
   root.style.setProperty('--dur-question', t.questionMs + 'ms');
@@ -180,7 +157,7 @@ function applyTweaks(t){
   root.style.setProperty('--dur-ask-hover', t.askHoverMs + 'ms');
   root.style.setProperty('--delay-actions', t.actionsDelayMs + 'ms');
 }
-applyTweaks(TWEAK_DEFAULTS);
+applyTiming(TIMING);
 
 const TEXT = {
   thinking: "……正在翻阅……",
@@ -192,15 +169,20 @@ const TEXT = {
 const C = window.__CORPUS__;
 const messages = C.msgs.map(m => ({ text: m[0], author: C.authors[m[1]], date: C.dates[m[2]] }));
 
-document.title = "西音磕考队之书";
-
-let lastIndex = -1;
+// Deal the lines like a shuffled deck: every one comes up once before any repeats.
+let deck = [], lastIndex = -1;
 function pickRandom(){
-  if (messages.length <= 1) return messages[0];
-  let idx;
-  do { idx = Math.floor(Math.random() * messages.length); } while (idx === lastIndex);
-  lastIndex = idx;
-  return messages[idx];
+  if (!deck.length){
+    deck = messages.map((_, i) => i);
+    for (let i = deck.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    // a fresh deck must not open with the line just shown
+    if (deck.length > 1 && deck[deck.length - 1] === lastIndex) [deck[0], deck[deck.length - 1]] = [deck[deck.length - 1], deck[0]];
+  }
+  lastIndex = deck.pop();
+  return messages[lastIndex];
 }
 
 const askBtn = document.getElementById('askBtn');
@@ -215,7 +197,6 @@ function escapeHtml(s){
 
 let closeTimer = null;
 let revealTimer = null;
-let lastQuestion = '';
 
 function hideAskUI(){ askBtn.classList.add('hidden'); }
 function showAskUI(){ askBtn.classList.remove('hidden'); }
@@ -224,9 +205,6 @@ function reveal(){
   if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
   if (revealTimer) { clearTimeout(revealTimer); revealTimer = null; }
 
-  // capture question text on ask (only the first time; again preserves it)
-  if (question.value.trim()) lastQuestion = question.value.trim();
-
   const askBtnVisible = !askBtn.classList.contains('hidden');
   hideAskUI();
   const thinkClass = askBtnVisible ? 'thinking' : 'thinking instant';
@@ -234,9 +212,7 @@ function reveal(){
   revealTimer = setTimeout(() => {
     revealTimer = null;
     const m = pickRandom();
-    const qEcho = '';
     answerArea.innerHTML = `
-      ${qEcho}
       <div class="answer show">
         <div class="quote">${escapeHtml(m.text)}</div>
         <div class="attribution"><span class="dash">——</span><span class="author">${escapeHtml(m.author)}</span>，${escapeHtml(m.date)}</div>
@@ -245,25 +221,22 @@ function reveal(){
     `;
     document.getElementById('againBtn').addEventListener('click', reveal);
     document.getElementById('resetBtn').addEventListener('click', closeBook);
-  }, TWEAK_DEFAULTS.thinkingMs);
+  }, TIMING.thinkingMs);
 }
 
 function closeBook(){
   if (revealTimer) { clearTimeout(revealTimer); revealTimer = null; }
-  const qecho = answerArea.querySelector('.qecho');
   const answer = answerArea.querySelector('.answer');
   const actions = answerArea.querySelector('.actions');
-  if (qecho) qecho.classList.add('closing');
   if (answer) answer.classList.add('closing');
   if (actions) actions.classList.add('closing');
   if (closeTimer) clearTimeout(closeTimer);
   closeTimer = setTimeout(() => {
     answerArea.innerHTML = '';
     question.value = '';
-    lastQuestion = '';
     showAskUI();
     closeTimer = null;
-  }, TWEAK_DEFAULTS.closeMs);
+  }, TIMING.closeMs);
 }
 
 askBtn.addEventListener('click', reveal);
@@ -275,6 +248,7 @@ question.addEventListener('keydown', e => {
 const bgm = document.getElementById('bgm');
 const musicToggle = document.getElementById('musicToggle');
 const musicCredit = document.querySelector('.music-credit');
+const musicError = document.getElementById('musicError');
 const MUSIC_URL = 'assets/fantasia.mp3';
 const TARGET_VOLUME = 0.5;
 const FADE_IN_MS = 900;
@@ -308,10 +282,8 @@ async function ensureLoaded(){
   musicToggle.classList.add('loading');
   loadController = new AbortController();
   try {
-    const response = await fetch(MUSIC_URL, { signal: loadController.signal });
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    const blob = await response.blob();
-    bgm.src = URL.createObjectURL(blob);
+    // set directly: fetch() is blocked on a page opened by double-click (file://)
+    bgm.src = MUSIC_URL;
     await new Promise((resolve, reject) => {
       const cleanup = () => {
         bgm.removeEventListener('loadeddata', onLoaded);
@@ -351,10 +323,11 @@ musicToggle.addEventListener('click', async () => {
     return;
   }
   wantPlay = !wantPlay;
+  musicError.hidden = true;
   if (wantPlay){
     const ok = await ensureLoaded();
     if (!wantPlay) return;
-    if (!ok) { wantPlay = false; return; }
+    if (!ok) { wantPlay = false; musicError.hidden = false; return; }
     if (bgm.paused){
       bgm.volume = 0;
       try { await bgm.play(); }
@@ -369,58 +342,6 @@ musicToggle.addEventListener('click', async () => {
   }
 });
 
-// Tweaks: edit mode panel
-(function(){
-  const panel = document.getElementById('tweaksPanel');
-  const rows = panel.querySelectorAll('.tweak-row');
-  const state = { ...TWEAK_DEFAULTS };
-  const inputs = {};
-
-  function refreshUI(){
-    rows.forEach(row => {
-      const input = row.querySelector('input');
-      const val = row.querySelector('.val');
-      const key = input.dataset.key;
-      input.value = state[key];
-      val.textContent = state[key] + ' ms';
-    });
-  }
-
-  rows.forEach(row => {
-    const input = row.querySelector('input');
-    const key = input.dataset.key;
-    inputs[key] = input;
-    input.addEventListener('input', () => {
-      state[key] = parseInt(input.value, 10);
-      row.querySelector('.val').textContent = state[key] + ' ms';
-      applyTweaks(state);
-      // update defaults so reveal/close timers pick up new thinkingMs/closeMs
-      TWEAK_DEFAULTS[key] = state[key];
-    });
-    input.addEventListener('change', () => {
-      const edit = {}; edit[key] = state[key];
-      window.parent.postMessage({type: '__edit_mode_set_keys', edits: edit}, '*');
-    });
-  });
-
-  document.getElementById('tweakReset').addEventListener('click', () => {
-    const fresh = {"headerMs":1200,"questionMs":1200,"thinkingMs":1050,"revealMs":1000,"actionsMs":700,"closeMs":250,"askHoverMs":450,"actionsDelayMs":700};
-    Object.assign(state, fresh);
-    Object.assign(TWEAK_DEFAULTS, fresh);
-    applyTweaks(state);
-    refreshUI();
-    window.parent.postMessage({type: '__edit_mode_set_keys', edits: fresh}, '*');
-  });
-
-  refreshUI();
-
-  window.addEventListener('message', e => {
-    if (!e.data) return;
-    if (e.data.type === '__activate_edit_mode') panel.classList.add('open');
-    else if (e.data.type === '__deactivate_edit_mode') panel.classList.remove('open');
-  });
-  window.parent.postMessage({type: '__edit_mode_available'}, '*');
-})();
 </script>
 </body>
 </html>
